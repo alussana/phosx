@@ -11,7 +11,13 @@ def parse_phosx_args():
                 prog='phosx',
                 description='Kinase activity inference from phosphosproteomics data based on substrate sequence specificity',
                 epilog=''
-    )    
+    )
+    parser.add_argument(
+        '-v', '--version',
+        action="version",
+        version="v0.1.0",
+        help='Print package version and exit'
+    )
     parser.add_argument(
         'seqrnk',
         type=str,
