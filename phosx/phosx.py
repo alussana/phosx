@@ -306,7 +306,7 @@ def compute_kinase_activity(
     ks_pvalue_series = compute_ks_pvalues(
         ks_empirical_distrib_df=ks_empirical_distrib_df,
         ks_series=ks_series,
-        plot_bool=True,
+        plot_bool=plot_figures,
         out_plot_prefix_str=out_plot_prefix
     )
     # compute FPR
