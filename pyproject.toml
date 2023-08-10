@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "phosx"
+version = "0.1.0"
+description = ""
+authors = ["Alessandro Lussana <alussana@ebi.ac.uk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
