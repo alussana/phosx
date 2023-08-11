@@ -1,6 +1,6 @@
 # PhosX
 
-Kinase activity inference from phosphosproteomics data based on substrate sequence specificity
+Kinase activity inference from phosphosproteomics data based on substrate sequence specificity.
 
 ## Installation
 
@@ -11,7 +11,7 @@ poetry build
 pip install dist/*.whl
 ```
 
-### Install from PyPI (currently live only on [Test PyPI](https://test.pypi.org))
+### Install from [PyPI](https://pypi.org)
 
 ```
 pip install phosx
@@ -20,7 +20,23 @@ pip install phosx
 ## Usage
 
 ```
-phosx [-h] [-v] [-p PSSM] [-n N_PERMUTATIONS] [-c N_PROC] [--plot_figures] [-o OUTPUT_DIR] seqrnk
+phosx [-h] [-v] [-p PSSM] [-n N_PERMUTATIONS] [-c N_PROC] [--plot-figures] [-o OUTPUT_DIR] seqrnk
+```
+```
+positional arguments:
+  seqrnk                Path to the seqrnk file.
+
+options:
+  -h, --help            show this help message and exit
+  -v, --version         Print package version and exit
+  -p PSSM, --pssm PSSM  Path to the h5 file storing custom PSSMs; defaults to built-in PSSMs
+  -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
+                        Number of random permutations; defaults to 10000
+  -c N_PROC, --n-proc N_PROC
+                        Number of cores used for multithreading; defaults to 1
+  --plot-figures        Save figures in svg format; see also --output_dir
+  -o OUTPUT_DIR, --output-dir OUTPUT_DIR
+                        Output files directory; only relevant if used with --plot_figures; defaults to 'phosx_output/'
 ```
 
 ## TODO

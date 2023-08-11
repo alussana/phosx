@@ -28,24 +28,24 @@ def parse_phosx_args():
         help='Path to the h5 file storing custom PSSMs; defaults to built-in PSSMs'
     )
     parser.add_argument(
-        '-n', '--n_permutations',
+        '-n', '--n-permutations',
         type=int,
         default=10000,
         help='Number of random permutations; defaults to 10000'
     )
     parser.add_argument(
-        '-c', '--n_proc',
+        '-c', '--n-proc',
         type=int,
         default=1,
         help='Number of cores used for multithreading; defaults to 1'
     )
     parser.add_argument(
-        '--plot_figures',
+        '--plot-figures',
         action='store_true',
         help='Save figures in svg format; see also --output_dir'
     )
     parser.add_argument(
-        '-o', '--output_dir',
+        '-o', '--output-dir',
         type=str,
         default='phosx_output/',
         help='Output files directory; only relevant if used with --plot_figures; defaults to \'phosx_output/\''
