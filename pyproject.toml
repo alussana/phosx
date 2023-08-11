@@ -11,7 +11,6 @@ python = "^3.10"
 h5py = "^3.9.0"
 pandas = "^2.0.3"
 seaborn = "^0.12.2"
-openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
 phosx = 'phosx.cli:main'

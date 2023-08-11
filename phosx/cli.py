@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-# Alessandro Lussana <alussana@ebi.ac.uk>
-
-import phosx
 import argparse
 from os import path
+from phosx.pssm_enrichments import kinase_activities
 
 def parse_phosx_args():
     parser = argparse.ArgumentParser(
@@ -44,26 +42,26 @@ def parse_phosx_args():
     parser.add_argument(
         '--plot_figures',
         action='store_true',
-        help='Output files prefix; defaults to \'phosx_output/\''
+        help='Save figures in svg format; see also --output_dir'
     )
     parser.add_argument(
-        '-o', '--output_prefix',
+        '-o', '--output_dir',
         type=str,
         default='phosx_output/',
-        help='Output files prefix; only relevant if used with --plot_figures; defaults to \'phosx_output/\''
+        help='Output files directory; only relevant if used with --plot_figures; defaults to \'phosx_output/\''
     )
     args = parser.parse_args()
     return args
 
 def main():
     args = parse_phosx_args()
-    phosx.compute_kinase_activity(
+    kinase_activities(
         args.seqrnk,
         args.pssm,
         args.n_permutations,
         args.n_proc,
         args.plot_figures,
-        args.output_prefix
+        args.output_dir
     )
 
 if __name__ == '__main__':
