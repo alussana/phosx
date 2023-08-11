@@ -451,7 +451,5 @@ def kinase_activities(
     activity_score_series.loc[activity_score_series > max_abs_activity_score_float] = max_abs_activity_score_float
     results_df['Activity Score'] = activity_score_series * results_df['KS'].apply(lambda x: 1 if x > 0 else -1)
     
-    # TODO: compute FDR q-value
-    
     # export results
     print(results_df.to_csv(sep='\t', header=True, index=True))
