@@ -1,4 +1,4 @@
-![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build_and_publish_to_pypi.yml/badge.svg)
+![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
 > NOTE: this software is still in development.
 
@@ -8,17 +8,18 @@ Kinase activity inference from phosphosproteomics data based on substrate sequen
 
 ## Installation
 
-### Build from source (requires [Poetry](https://python-poetry.org))
+### From [PyPI](https://pypi.org)
+
+```
+pip install phosx
+```
+
+
+### From source (requires [Poetry](https://python-poetry.org))
 
 ```
 poetry build
 pip install dist/*.whl
-```
-
-### Install from [PyPI](https://pypi.org)
-
-```
-pip install phosx
 ```
 
 ## Usage
@@ -52,8 +53,8 @@ options:
 - [ ] **Filter temporary warnings** - when plotting figures from `phosx.pssm_enrichments.ks_statistic` and `phosx.pssm_enrichments.compute_ks_pvalues`, many warnings will be thrown (`UserWarning: The figure layout has changed to tight`). This is a Matplotlib known issue: [https://github.com/matplotlib/matplotlib/issues/26290](https://github.com/matplotlib/matplotlib/issues/26290)
 - [x] **Create dirs** - if not existent, for output files
 - [ ] Fix figure generation errors
-- [ ] **Consider direction of regulation**: KS statistics needs to be pos/neg in order to be considered for pos/neg regulation significance, respectively.
+- [x] **Consider direction of regulation**: direction of enrichment needs to be pos/neg in order to be considered for pos/neg regulation significance, respectively.
 - [ ] **Add docs**
 - [ ] **tqdm** - Add optional progress bar for permutations
-- [ ] **Null KS** - Report also null KS mean in the output table?
+- [x] **Null KS** - Report also null KS mean in the output table?
 - [ ] **FDR** - Report also the FDR q-value in the output table? 
