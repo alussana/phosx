@@ -11,12 +11,6 @@ def parse_phosx_args():
                 epilog=''
     )
     parser.add_argument(
-        '-v', '--version',
-        action="version",
-        version="v0.1.0",
-        help='Print package version and exit'
-    )
-    parser.add_argument(
         'seqrnk',
         type=str,
         help='Path to the seqrnk file.'
@@ -24,14 +18,26 @@ def parse_phosx_args():
     parser.add_argument(
         '-p', '--pssm',
         type=str,
-        default=str(path.join(path.dirname(__file__), 'data/pssm.h5')),
+        default=str(path.join(path.dirname(__file__), 'data/PSSMs.h5')),
         help='Path to the h5 file storing custom PSSMs; defaults to built-in PSSMs'
+    )
+    parser.add_argument(
+        '-q', '--pssm-quantiles',
+        type=str,
+        default=str(path.join(path.dirname(__file__), 'data/pssm_score_quantiles.h5')),
+        help='Path to the h5 file storing custom PSSM score quantile distributions under the key \'pssm_scores\'; defaults to built-in PSSM scores quantiles'
     )
     parser.add_argument(
         '-n', '--n-permutations',
         type=int,
         default=10000,
         help='Number of random permutations; defaults to 10000'
+    )
+    parser.add_argument(
+        '-k', '--n-top-kinases',
+        type=int,
+        default=15,
+        help='Number of top-scoring kinases potentially associatiated to a given phosphosite; defaults to 15'
     )
     parser.add_argument(
         '-c', '--n-proc',
@@ -50,6 +56,12 @@ def parse_phosx_args():
         default='phosx_output/',
         help='Output files directory; only relevant if used with --plot_figures; defaults to \'phosx_output/\''
     )
+    parser.add_argument(
+        '-v', '--version',
+        action="version",
+        version="v0.2.0",
+        help='Print package version and exit'
+    )
     args = parser.parse_args()
     return args
 
@@ -58,7 +70,9 @@ def main():
     kinase_activities(
         args.seqrnk,
         args.pssm,
+        args.pssm_quantiles,
         args.n_permutations,
+        args.n_top_kinases,
         args.n_proc,
         args.plot_figures,
         args.output_dir

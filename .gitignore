@@ -1,2 +1,5 @@
 dist/
 phosx/__pycache__/
+.ipynb_checkpoints/
+*.ipynb
+*.tmp
