@@ -1,5 +1,7 @@
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
+> Current version: `v0.3.1`
+> 
 > NOTE: this software is still in development.
 
 # PhosX
@@ -13,7 +15,6 @@ Kinase activity inference from phosphosproteomics data based on substrate sequen
 ```
 pip install phosx
 ```
-
 
 ### From source (requires [Poetry](https://python-poetry.org))
 
@@ -52,7 +53,7 @@ options:
 
 - [ ] **Filter temporary warnings** - when plotting figures from `phosx.pssm_enrichments.ks_statistic` and `phosx.pssm_enrichments.compute_ks_pvalues`, many warnings will be thrown (`UserWarning: The figure layout has changed to tight`). This is a Matplotlib known issue: [https://github.com/matplotlib/matplotlib/issues/26290](https://github.com/matplotlib/matplotlib/issues/26290)
 - [x] **Create dirs** - if not existent, for output files
-- [ ] Fix figure generation errors
+- [x] Fix figure generation errors
 - [x] **Consider direction of regulation**: direction of enrichment needs to be pos/neg in order to be considered for pos/neg regulation significance, respectively.
 - [ ] **Add docs**
 - [ ] **tqdm** - Add optional progress bar for permutations

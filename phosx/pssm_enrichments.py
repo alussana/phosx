@@ -407,7 +407,7 @@ def compute_ks_pvalues(
             plt.clf()
             fig, ax = plt.subplots(figsize=(5, 3))
 
-            ax = sns.displot(data=empirical_list, height=3, aspect=5 / 3)
+            ax = sns.displot(data=empirical_list, height=3, aspect=5 / 3, bins=100)
 
             ax.set(
                 title=f"Empirical ks distribution for {kinase_str} ({len(empirical_list)} perm.)",
