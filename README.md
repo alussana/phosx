@@ -1,29 +1,33 @@
+<p align="center">
+  <img width="312" src="https://i.imgur.com/B4lFQx6.png">
+  <br>
+  Kinase activity inference from phosphosproteomics data based on substrate sequence specificity.
+  <br>
+</p>
+
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
 > Current version: `v0.3.1`
 > 
 > NOTE: this software is still in development.
 
-# PhosX
 
-Kinase activity inference from phosphosproteomics data based on substrate sequence specificity.
+# Installation
 
-## Installation
-
-### From [PyPI](https://pypi.org)
+## From [PyPI](https://pypi.org)
 
 ```
 pip install phosx
 ```
 
-### From source (requires [Poetry](https://python-poetry.org))
+## From source (requires [Poetry](https://python-poetry.org))
 
 ```
 poetry build
 pip install dist/*.whl
 ```
 
-## Usage
+# Usage
 
 ```
 phosx [-h] [-p PSSM] [-q PSSM_QUANTILES] [-n N_PERMUTATIONS] [-k N_TOP_KINASES] [-c N_PROC] [--plot-figures] [-o OUTPUT_DIR] [-v] seqrnk
@@ -49,8 +53,9 @@ options:
   -v, --version         Print package version and exit
 ```
 
-## TODO
+# TODO
 
+- [ ] **Running sum** - modify as in GSEA: increase sum during random walk when phosphosite is target, decrease when is not. Total sum should be 0. Increments are scaled by the absolute value of the ranking metric. Note that this results in asymmetric null distributions.
 - [ ] **Filter temporary warnings** - when plotting figures from `phosx.pssm_enrichments.ks_statistic` and `phosx.pssm_enrichments.compute_ks_pvalues`, many warnings will be thrown (`UserWarning: The figure layout has changed to tight`). This is a Matplotlib known issue: [https://github.com/matplotlib/matplotlib/issues/26290](https://github.com/matplotlib/matplotlib/issues/26290)
 - [x] **Create dirs** - if not existent, for output files
 - [x] Fix figure generation errors
