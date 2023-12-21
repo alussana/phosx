@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="312" src="https://i.imgur.com/B4lFQx6.png">
+  <img width="256" src="https://i.imgur.com/B4lFQx6.png">
   <br>
   Kinase activity inference from phosphosproteomics data based on substrate sequence specificity.
   <br>
@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `v0.3.1`
+> Current version: `v0.3.3`
 > 
 > NOTE: this software is still in development.
 
