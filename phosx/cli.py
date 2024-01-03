@@ -41,6 +41,13 @@ def parse_phosx_args():
         help="Number of top-scoring kinases potentially associatiated to a given phosphosite; defaults to 15",
     )
     parser.add_argument(
+        "-h",
+        "--min-n-hits",
+        type=int,
+        default=4,
+        help="Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; defaults to 4",
+    )
+    parser.add_argument(
         "-c",
         "--n-proc",
         type=int,
@@ -78,6 +85,7 @@ def main():
         args.pssm_quantiles,
         args.n_permutations,
         args.n_top_kinases,
+        args.min_n_hits,
         args.n_proc,
         args.plot_figures,
         args.output_dir,
