@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `v0.4.2`
+> Current version: `v0.4.3`
 > 
 > NOTE: this software is still in development. Unexpected behaviors may occur.
 
