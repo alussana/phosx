@@ -7,10 +7,9 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `v0.4.1`
+> Current version: `v0.4.2`
 > 
 > NOTE: this software is still in development. Unexpected behaviors may occur.
-
 
 # Installation
 
@@ -58,7 +57,8 @@ options:
 # TODO
 
 - [ ] **Filter temporary warnings** - when plotting figures from `phosx.pssm_enrichments.ks_statistic` and `phosx.pssm_enrichments.compute_ks_pvalues`, many warnings will be thrown (`UserWarning: The figure layout has changed to tight`). This is a Matplotlib known issue: [https://github.com/matplotlib/matplotlib/issues/26290](https://github.com/matplotlib/matplotlib/issues/26290)
+- [ ] **Output table** - report kinases that didn't pass the MIN_N_HITS filter
 - [ ] **Add docs**
 - [ ] **tqdm** - Add optional progress bar for permutations
-- [x] **Null KS** - Report also null KS mean in the output table
+- [ ] **Null KS** - Remove null KS mean in the output table
 - [ ] **FDR** - Report also the FDR q-value in the output table

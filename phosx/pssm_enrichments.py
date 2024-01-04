@@ -225,7 +225,7 @@ def compute_ks(
     
     # ranking metric for hits for each kinase
     rj_df = binarised_pssm_scores.apply(
-        lambda x: x * seqrnk_series,
+        lambda x: x * seqrnk_series.abs(),
         axis=0
     )
      
@@ -304,7 +304,10 @@ def compute_null_ks(
         ] = P_miss_series[kinase]
            
     # compute ks for each kinase
-    ks_series = running_sum_deltas_df.apply(ks_statistic, axis=0)
+    ks_series = running_sum_deltas_df.apply(
+        ks_statistic,
+        axis=0
+    )
 
     ks_df = pd.DataFrame([ks_series])
 
@@ -462,7 +465,7 @@ def kinase_activities(
     ks_empirical_mean_series = ks_empirical_distrib_df.apply(lambda x: x.mean(), axis=0)
     ks_empirical_mean_series.name = "null KS mean"
 
-    # compute real ks statistic for all kinases (upregulation)
+    # compute real ks statistic for all kinases
     ks_series = compute_ks(
         seqrnk_series=seqrnk["Score"],
         binarised_pssm_scores=binarised_pssm_scores,
@@ -471,7 +474,7 @@ def kinase_activities(
     )
     ks_series.name = "KS"
 
-    # compute ks p values for all kinases (upregulation)
+    # compute ks p values for all kinases
     ks_pvalue_series = compute_ks_pvalues(
         ks_empirical_distrib_df=ks_empirical_distrib_df,
         ks_series=ks_series,
