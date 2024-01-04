@@ -41,11 +41,11 @@ def parse_phosx_args():
         help="Number of top-scoring kinases potentially associatiated to a given phosphosite; defaults to 15",
     )
     parser.add_argument(
-        "-h",
+        "-m",
         "--min-n-hits",
         type=int,
-        default=4,
-        help="Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; defaults to 4",
+        default=15,
+        help="Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; defaults to 15",
     )
     parser.add_argument(
         "-c",

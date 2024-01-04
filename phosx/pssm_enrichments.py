@@ -219,16 +219,9 @@ def compute_ks(
     
     seqrnk_series: pd.Series,
     binarised_pssm_scores: pd.DataFrame,
-    upregulation: bool = True,
     plot_bool: bool = True,
     out_plot_dir_str: str = "phosx_output"
 ):
-    
-    # take only positive or only negative phosphosites according to upregulation argument
-    m_factor = int(upregulation) * 2 - 1
-    seqrnk_series = seqrnk_series * m_factor
-    seqrnk_series = seqrnk_series.loc[seqrnk_series > 0]
-    binarised_pssm_scores = binarised_pssm_scores.iloc[seqrnk_series.index, ]
     
     # ranking metric for hits for each kinase
     rj_df = binarised_pssm_scores.apply(
@@ -261,7 +254,7 @@ def compute_ks(
     # compute ks for each kinase
     ks_series = running_sum_deltas_df.apply(
         ks_statistic,
-        args=[plot_bool, f'{out_plot_dir_str}_UpReg{upregulation}'],
+        args=[plot_bool, out_plot_dir_str],
         axis=0
     )
 
@@ -284,26 +277,17 @@ def compute_null_ks(
     
     # ranking metric for hits for each kinase
     rj_df = shuffled_binarised_pssm_scores.apply(
-        lambda x: x * seqrnk_series,
+        lambda x: x * seqrnk_series.abs(),
         axis=0
     )
-    
-    # sum of rj for each kinase
-    Nr_series = rj_df.sum()
-    
-    # number of hits for each kinase
-    Nh_series = rj_df.apply(
-        lambda x: len(x.loc[x!=0]),
-        axis=0
-    )
-    
+      
     # number of non-hits for each kinase
     Nnh_series = rj_df.apply(
         lambda x: len(x.loc[x==0]),
         axis=0
     )
     
-    # scale ranking metric for hits in order to sum to 1 for each kinase
+    # scale ranking metric for hits for each kinase
     P_hit_df = rj_df.apply(
         lambda x: x / x.sum(),
         axis=0
@@ -312,13 +296,13 @@ def compute_null_ks(
     # assign decrement score for non-hits in order to sum to -1 for each kinase
     P_miss_series = - 1 / Nnh_series
     
-    # make table of running sum deltas for each kinase
+    # make table of absolute running sum deltas for each kinase
     running_sum_deltas_df = P_hit_df
     for kinase in running_sum_deltas_df.columns:
         running_sum_deltas_df[kinase].loc[
             running_sum_deltas_df[kinase]==0
         ] = P_miss_series[kinase]
-    
+           
     # compute ks for each kinase
     ks_series = running_sum_deltas_df.apply(ks_statistic, axis=0)
 
@@ -331,16 +315,9 @@ def compute_ks_empirical_distrib(
     binarised_pssm_scores: pd.DataFrame,
     seqrnk_series: pd.Series,
     n: int = 1000,
-    n_proc: int = 1,
-    upregulation: bool = True
+    n_proc: int = 1
 ):
    
-    # take only positive or only negative phosphosites according to upregulation argument
-    m_factor = int(upregulation) * 2 - 1
-    seqrnk_series = seqrnk_series * m_factor
-    seqrnk_series = seqrnk_series.loc[seqrnk_series > 0]
-    binarised_pssm_scores = binarised_pssm_scores.iloc[seqrnk_series.index, ]
-    
     # run compute_null_ks n times in parallel
     arg1 = [seqrnk_series for i in range(n)]
     arg2 = [binarised_pssm_scores for i in range(n)]
@@ -374,14 +351,15 @@ def compute_ks_pvalues(
         empirical_list = ks_empirical_distrib_df[kinase_str]
 
         value_float = ks_series[kinase_str]
-
-        num_int = sum([x > value_float for x in empirical_list])
+        
+        if value_float > 0:
+            num_int = sum([x > value_float for x in empirical_list])
+        else:
+            num_int = sum([x < value_float for x in empirical_list])
+            
         den_int = len(empirical_list)
         pvalue = num_int / den_int
 
-        if pvalue > 0.5:
-            num_int = den_int - num_int
-            pvalue = num_int / den_int
         ks_pvalue_series[kinase_str] = pvalue
 
         if plot_bool:
@@ -407,37 +385,33 @@ def compute_ks_pvalues(
     return ks_pvalue_series
 
 
-def compute_activity_score(results_df: pd.DataFrame):
+def compute_activity_score(
+    results_df: pd.DataFrame,
+    max_abs_score: float
+):
     # compute FPR
     results_df["FPR p value"] = results_df["p value"] * len(results_df)
     results_df["FPR p value"].loc[results_df["FPR p value"] > 1] = 1
 
-    # compute uncorrected activity score as -log10(FPR), signed with the sign of KS
+    # compute activity score as -log10(FPR), signed with the sign of KS
     activity_score_series = results_df["p value"].copy()
-    # 0. compute maximum absolute activity score
-    min_non0_fpr_float = min(activity_score_series.loc[activity_score_series != 0])
-    max_abs_activity_score_float = -np.log10(min_non0_fpr_float)
+    
     # 1. replace zeroes with tiny numbers
     activity_score_series.loc[activity_score_series == 0] = np.nextafter(
         np.float32(0), np.float32(1)
     )
+    
     # 2. compute -log10
     activity_score_series = -np.log10(activity_score_series)
+    
     # 3. cap at maximum
     activity_score_series.loc[
-        activity_score_series > max_abs_activity_score_float
-    ] = max_abs_activity_score_float
+        activity_score_series > max_abs_score
+    ] = max_abs_score
+    
     # 4. apply the same sign as ks
-    results_df["uncorrected Activity Score"] = activity_score_series * results_df[
-        "KS"
-    ].apply(lambda x: 1 if x > 0 else -1)
-    # 5. set Activity Score to 0 if direction of enrichment is not consistent with sign of KS
-    results_df["Activity Score"] = results_df.apply(
-        lambda x: x["uncorrected Activity Score"]
-        if x["KS"] * np.sign(x["KS"]) > x["null KS mean"] * np.sign(x["KS"])
-        else 0,
-        axis=1,
-    )
+    results_df["Activity Score"] = activity_score_series * np.sign(results_df["KS"])
+    
     return results_df
 
 
@@ -447,7 +421,7 @@ def kinase_activities(
     pssm_score_quantiles_h5_file: str,
     n_perm: int = 10000,
     n_top_kinases: int = 15,
-    min_n_hits: int = 4,
+    min_n_hits: int = 10,
     n_proc: int = 1,
     plot_figures: bool = False,
     out_plot_dir: str = "phosx_output",
@@ -475,65 +449,32 @@ def kinase_activities(
         pssm_scoring_scaled01_df, n=n_top_kinases
     )
     
-    # drop kinases with no hits
+    # drop kinases with less than min_n_hits
     binarised_pssm_scores = binarised_pssm_scores.loc[:, binarised_pssm_scores.sum() >= min_n_hits]
 
-    # compute empirical distribution of ks statistic for all kinases (upregulation)
-    ks_empirical_distrib_upregulation_df = compute_ks_empirical_distrib(
+    # compute empirical distribution of ks statistic for all kinases
+    ks_empirical_distrib_df = compute_ks_empirical_distrib(
         binarised_pssm_scores=binarised_pssm_scores,
         seqrnk_series=seqrnk["Score"],
         n=n_perm,
-        n_proc=n_proc,
-        upregulation=True
+        n_proc=n_proc
     )
-    ks_empirical_mean_upregulation_series = ks_empirical_distrib_upregulation_df.apply(lambda x: x.mean(), axis=0)
-    ks_empirical_mean_upregulation_series.name = "null KS mean"
-    
-    # compute empirical distribution of ks statistic for all kinases (downregulation)
-    ks_empirical_distrib_downregulation_df = compute_ks_empirical_distrib(
-        binarised_pssm_scores=binarised_pssm_scores,
-        seqrnk_series=seqrnk["Score"],
-        n=n_perm,
-        n_proc=n_proc,
-        upregulation=False
-    )
-    ks_empirical_mean_downregulation_series = ks_empirical_distrib_downregulation_df.apply(lambda x: x.mean(), axis=0)
-    ks_empirical_mean_downregulation_series.name = "null KS mean"
+    ks_empirical_mean_series = ks_empirical_distrib_df.apply(lambda x: x.mean(), axis=0)
+    ks_empirical_mean_series.name = "null KS mean"
 
     # compute real ks statistic for all kinases (upregulation)
-    ks_upregulation_series = compute_ks(
+    ks_series = compute_ks(
         seqrnk_series=seqrnk["Score"],
         binarised_pssm_scores=binarised_pssm_scores,
-        upregulation=True,
         plot_bool=plot_figures,
         out_plot_dir_str=out_plot_dir
     )
-    ks_upregulation_series.name = "KS"
-    
-    # compute real ks statistic for all kinases (downregulation)
-    ks_downregulation_series = compute_ks(
-        seqrnk_series=seqrnk["Score"],
-        binarised_pssm_scores=binarised_pssm_scores,
-        upregulation=False,
-        plot_bool=plot_figures,
-        out_plot_dir_str=out_plot_dir
-    )
-    ks_downregulation_series.name = "KS"
-
-    # TODO bookmark
+    ks_series.name = "KS"
 
     # compute ks p values for all kinases (upregulation)
-    ks_pvalue_upregulation_series = compute_ks_pvalues(
-        ks_empirical_distrib_df=ks_empirical_distrib_upregulation_df,
-        ks_series=ks_upregulation_series,
-        plot_bool=plot_figures,
-        out_plot_dir_str=out_plot_dir,
-    )
-    
-    # compute ks p values for all kinases (downregulation)
-    ks_pvalue_downregulation_series = compute_ks_pvalues(
-        ks_empirical_distrib_df=ks_empirical_distrib_downregulation_df,
-        ks_series=ks_downregulation_series,
+    ks_pvalue_series = compute_ks_pvalues(
+        ks_empirical_distrib_df=ks_empirical_distrib_df,
+        ks_series=ks_series,
         plot_bool=plot_figures,
         out_plot_dir_str=out_plot_dir,
     )
@@ -542,10 +483,9 @@ def kinase_activities(
     results_df = pd.concat(
         [ks_series, ks_empirical_mean_series, ks_pvalue_series], axis=1
     )
-    ###
 
     # compute activity score for all kinases
-    results_df = compute_activity_score(results_df)
+    results_df = compute_activity_score(results_df, np.log10(n_perm))
 
     # export results
     print(results_df.to_csv(sep="\t", header=True, index=True))

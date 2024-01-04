@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="230" src="https://i.imgur.com/f5bWp6J.png">
+  <img width="230" src="https://i.imgur.com/OzGTvkt.png">
   <br>
   Kinase activity inference from phosphosproteomics data based on substrate sequence specificity
   <br><br>
@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `v0.4.0`
+> Current version: `v0.4.1`
 > 
 > NOTE: this software is still in development. Unexpected behaviors may occur.
 
@@ -45,6 +45,8 @@ options:
                         Number of random permutations; defaults to 10000
   -k N_TOP_KINASES, --n-top-kinases N_TOP_KINASES
                         Number of top-scoring kinases potentially associatiated to a given phosphosite; defaults to 15
+  -m MIN_N_HITS, --min-n-hits MIN_N_HITS
+                        Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; defaults to 15
   -c N_PROC, --n-proc N_PROC
                         Number of cores used for multithreading; defaults to 1
   --plot-figures        Save figures in svg format; see also --output_dir
@@ -55,12 +57,8 @@ options:
 
 # TODO
 
-- [ ] **Running sum** - modify as in GSEA: increase sum during random walk when phosphosite is target, decrease when is not. Total sum should be 0. Increments are scaled by the absolute value of the ranking metric. Note that this results in asymmetric null distributions.
 - [ ] **Filter temporary warnings** - when plotting figures from `phosx.pssm_enrichments.ks_statistic` and `phosx.pssm_enrichments.compute_ks_pvalues`, many warnings will be thrown (`UserWarning: The figure layout has changed to tight`). This is a Matplotlib known issue: [https://github.com/matplotlib/matplotlib/issues/26290](https://github.com/matplotlib/matplotlib/issues/26290)
-- [x] **Create dirs** - if not existent, for output files
-- [x] Fix figure generation errors
-- [x] **Consider direction of regulation**: direction of enrichment needs to be pos/neg in order to be considered for pos/neg regulation significance, respectively.
 - [ ] **Add docs**
 - [ ] **tqdm** - Add optional progress bar for permutations
-- [x] **Null KS** - Report also null KS mean in the output table?
-- [ ] **FDR** - Report also the FDR q-value in the output table? 
+- [x] **Null KS** - Report also null KS mean in the output table
+- [ ] **FDR** - Report also the FDR q-value in the output table
