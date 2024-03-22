@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "phosx"
+version = "0.5.3"
+description = ""
+authors = ["Alessandro Lussana <alussana@ebi.ac.uk>"]
+readme = "README.md"
+include = ["phosx/data/*"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+h5py = "^3.9.0"
+pandas = "^2.0.3"
+seaborn = "^0.12.2"
+tables = "^3.9.2"
+tqdm = "^4.66.2"
+
+[tool.poetry.scripts]
+phosx = 'phosx.cli:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
