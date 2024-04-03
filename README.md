@@ -7,9 +7,9 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `v0.5.3`
+> Current version: `v0.5.4`
 
-> Research paper: [ ]
+> Research paper: [https://doi.org/10.1101/2024.03.22.586304](https://doi.org/10.1101/2024.03.22.586304)
 
 # Overview
 
@@ -25,7 +25,7 @@ PhosX infers differential kinase activities from phosphoproteomics data without 
 
 ## From [PyPI](https://pypi.org/project/phosx/)
 
-```
+```bash
 pip install phosx
 ```
 
@@ -38,10 +38,10 @@ pip install dist/*.whl
 
 # Usage
 
-```
+```bash
 phosx [-h] [-p PSSM] [-q PSSM_QUANTILES] [-n N_PERMUTATIONS] [-k N_TOP_KINASES] [-m MIN_N_HITS] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-o OUTPUT_PATH] [-v] seqrnk
 ```
-```
+```bash
 positional arguments:
   seqrnk                Path to the seqrnk file.
 
@@ -70,4 +70,20 @@ Minimal example to run PhosX with default parameters on an example dataset, usin
 
 ```bash
 phosx -c 8 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activities.tsv
+```
+
+# Cite
+
+BibTeX:
+
+```bibtex
+@article{Lussana2024,
+  title = {PhosX: data-driven kinase activity inference from phosphoproteomics experiments},
+  url = {http://dx.doi.org/10.1101/2024.03.22.586304},
+  DOI = {10.1101/2024.03.22.586304},
+  publisher = {Cold Spring Harbor Laboratory},
+  author = {Lussana,  Alessandro and Petsalaki,  Evangelia},
+  year = {2024},
+  month = mar 
+}
 ```

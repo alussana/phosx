@@ -38,7 +38,7 @@ def parse_phosx_args():
         "-k",
         "--n-top-kinases",
         type=int,
-        default=8,
+        default=5,
         help="Number of top-scoring kinases potentially associatiated to a given phosphosite; default: 8",
     )
     parser.add_argument(
@@ -78,7 +78,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="v0.5.3",
+        version="v0.5.4",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -86,9 +86,8 @@ def parse_phosx_args():
 
 
 def main():
-
     print(
-    f"""    
+        f"""    
   ██████╗░██╗░░██╗░█████╗░░██████╗██╗░░██╗
   ██╔══██╗██║░░██║██╔══██╗██╔════╝╚██╗██╔╝
   ██████╔╝███████║██║░░██║╚█████╗░░╚███╔╝░
@@ -96,15 +95,15 @@ def main():
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
   
-  Version 0.5.2
+  Version 0.5.4
   Copyright (C) 2024 Alessandro Lussana
   Licence Apache 2.0
   
   Command: {' '.join(sys.argv)}
     """,
-    file=sys.stderr
+        file=sys.stderr,
     )
-    
+
     args = parse_phosx_args()
     kinase_activities(
         args.seqrnk,
@@ -116,7 +115,7 @@ def main():
         args.n_proc,
         args.plot_figures,
         args.output_dir,
-        args.output_path
+        args.output_path,
     )
 
 

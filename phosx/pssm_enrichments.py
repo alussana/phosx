@@ -8,6 +8,7 @@ import h5py
 from random import shuffle
 from multiprocessing import Pool
 from tqdm import tqdm
+import warnings
 
 AA_LIST = [
     "G",
@@ -120,7 +121,7 @@ def pssm_scoring(seq: str, pssm_df_dict: dict):
     return out_series
 
 
-def binarise_pssm_scores(scaled_scores: pd.DataFrame, n: int = 8):
+def binarise_pssm_scores(scaled_scores: pd.DataFrame, n: int = 5):
     """Binarise kinase PSSM scores given the number of top-scoring kinases that should be assigned to a phosphosite.
 
     Args:
@@ -217,7 +218,7 @@ def compute_ks(
     P_miss_series = -1 / Nnh_series
 
     # make table of running sum deltas for each kinase
-    running_sum_deltas_df = P_hit_df
+    running_sum_deltas_df = P_hit_df.copy()
     for kinase in running_sum_deltas_df.columns:
         running_sum_deltas_df[kinase].loc[
             running_sum_deltas_df[kinase] == 0
@@ -254,7 +255,7 @@ def compute_null_ks(seqrnk_series: pd.Series, binarised_pssm_scores: pd.DataFram
     P_miss_series = -1 / Nnh_series
 
     # make table of absolute running sum deltas for each kinase
-    running_sum_deltas_df = P_hit_df
+    running_sum_deltas_df = P_hit_df.copy()
     for kinase in running_sum_deltas_df.columns:
         running_sum_deltas_df[kinase].loc[
             running_sum_deltas_df[kinase] == 0
@@ -277,14 +278,16 @@ def compute_ks_empirical_distrib(
     # run compute_null_ks n times in parallel
     arg1 = [seqrnk_series for i in range(n)]
     arg2 = [binarised_pssm_scores for i in range(n)]
-    
-    #with Pool(processes=n_proc) as pool:
+
+    # with Pool(processes=n_proc) as pool:
     #    dfs_list = pool.starmap(compute_null_ks, zip(arg1, arg2))
-        
+
     with Pool(processes=n_proc) as pool:
         dfs_list = pool.starmap(
             compute_null_ks,
-            tqdm(zip(arg1, arg2), total=n, desc='   Performing permutations   ', ncols=80)
+            tqdm(
+                zip(arg1, arg2), total=n, desc="   Performing permutations   ", ncols=80
+            ),
         )
 
     out_df = pd.concat(dfs_list, axis=0)
@@ -379,22 +382,23 @@ def kinase_activities(
     pssm_h5_file: str,
     pssm_score_quantiles_h5_file: str,
     n_perm: int = 1000,
-    n_top_kinases: int = 8,
+    n_top_kinases: int = 5,
     min_n_hits: int = 4,
     n_proc: int = 1,
     plot_figures: bool = False,
     out_plot_dir: str = "phosx_output",
-    out_path = None
+    out_path=None,
 ):
-   
-    print('    Loading input objects    : ', file=sys.stderr, end='')
+    warnings.simplefilter(action="ignore", category=FutureWarning)
+
+    print("    Loading input objects    : ", file=sys.stderr, end="")
     pssm_df_dict = read_pssms(pssm_h5_file)
     seqrnk = read_seqrnk(seqrnk_file)
     pssm_bg_scores_df = read_pssm_score_quantiles(pssm_score_quantiles_h5_file)
 
     # sort seqrnk by phosphosite score in descending order
     seqrnk = seqrnk.sort_values(by="Score", ascending=False)
-    print('DONE', file=sys.stderr)
+    print("DONE", file=sys.stderr)
 
     # score phosphosite sequences with each PSSM
     seq_series = seqrnk["Sequence"]
@@ -403,12 +407,17 @@ def kinase_activities(
     with Pool(processes=n_proc) as pool:
         dfs_list = pool.starmap(
             pssm_scoring,
-            tqdm(zip(arg1, arg2), ncols=80, total=len(seq_series), desc='   Scoring phosphopeptides   ')
+            tqdm(
+                zip(arg1, arg2),
+                ncols=80,
+                total=len(seq_series),
+                desc="   Scoring phosphopeptides   ",
+            ),
         )
     pssm_scoring_df = pd.concat(dfs_list, axis=1).T
     pssm_scoring_df.index = list(range(len(seq_series)))
 
-    print('Assigning kinases to targets : ', file=sys.stderr, end='')
+    print("Assigning kinases to targets : ", file=sys.stderr, end="")
     # quantile-scale the PSSM scores for each kinase
     pssm_scoring_scaled01_df = pssm_scoring_df.apply(
         quantile_scaling,
@@ -425,7 +434,7 @@ def kinase_activities(
     binarised_pssm_scores = binarised_pssm_scores.loc[
         :, binarised_pssm_scores.sum() >= min_n_hits
     ]
-    print('DONE', file=sys.stderr)
+    print("DONE", file=sys.stderr)
 
     # compute empirical distribution of ks statistic for all kinases
     ks_empirical_distrib_df = compute_ks_empirical_distrib(
@@ -445,7 +454,7 @@ def kinase_activities(
     ks_series.name = "KS"
 
     # compute ks p values for all kinases
-    print('  Computing activity scores  : ', file=sys.stderr, end='')
+    print("  Computing activity scores  : ", file=sys.stderr, end="")
     ks_pvalue_series = compute_ks_pvalues(
         ks_empirical_distrib_df=ks_empirical_distrib_df,
         ks_series=ks_series,
@@ -454,9 +463,7 @@ def kinase_activities(
     )
 
     # output table
-    results_df = pd.concat(
-        [ks_series, ks_pvalue_series], axis=1
-    )
+    results_df = pd.concat([ks_series, ks_pvalue_series], axis=1)
 
     # compute activity score for all kinases
     results_df = compute_activity_score(results_df, np.log10(n_perm))
@@ -466,6 +473,6 @@ def kinase_activities(
         print(results_df.to_csv(sep="\t", header=True, index=True))
     else:
         results_df.to_csv(out_path, sep="\t", header=True, index=True)
-    print('DONE', file=sys.stderr, end='\n\n')
-    
+    print("DONE", file=sys.stderr, end="\n\n")
+
     return results_df

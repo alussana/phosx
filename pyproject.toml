@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "phosx"
-version = "0.5.3"
+version = "0.5.4"
 description = ""
 authors = ["Alessandro Lussana <alussana@ebi.ac.uk>"]
 readme = "README.md"
