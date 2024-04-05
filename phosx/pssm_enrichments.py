@@ -190,7 +190,7 @@ def ks_statistic(
         plt.tight_layout()
 
         plt.savefig(os.path.join(out_plot_dir_str, f"{kinase}.pdf"))
-        plt.close()
+        plt.close(fig)
 
     if abs(max_ks) > abs(min_ks):
         return max_ks
@@ -347,7 +347,7 @@ def compute_ks_pvalues(
             plt.tight_layout()
 
             plt.savefig(os.path.join(out_plot_dir_str, f"{kinase_str}_ks_dist.pdf"))
-            plt.close()
+            plt.close(fig)
 
     return ks_pvalue_series
 
