@@ -95,7 +95,7 @@ def main():
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
   
-  Version 0.5.5
+  Version 0.6.0
   Copyright (C) 2024 Alessandro Lussana
   Licence Apache 2.0
   

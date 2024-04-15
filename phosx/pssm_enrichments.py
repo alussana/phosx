@@ -397,7 +397,7 @@ def kinase_activities(
     pssm_bg_scores_df = read_pssm_score_quantiles(pssm_score_quantiles_h5_file)
 
     # sort seqrnk by phosphosite score in descending order
-    seqrnk = seqrnk.sort_values(by="Score", ascending=False)
+    seqrnk.sort_values(by="Score", ascending=False, inplace=True, ignore_index=True)
     print("DONE", file=sys.stderr)
 
     # score phosphosite sequences with each PSSM
