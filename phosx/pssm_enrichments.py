@@ -53,8 +53,11 @@ def read_pssms(pssms_h5_file: str):
 
 def read_seqrnk(seqrnk_file: str, ser_thr_only: bool = False, tyr_only: bool = False):
     if ser_thr_only and tyr_only:
-        print('W: both ser_thr_only and tyr_only have been set to True. PhosX will consider only Ser/Thr phosphosites in this run.', file=sys.stderr)
-        
+        print(
+            "W: both ser_thr_only and tyr_only have been set to True. PhosX will consider only Ser/Thr phosphosites in this run.",
+            file=sys.stderr,
+        )
+
     seqrnk = pd.read_csv(seqrnk_file, sep="\t", header=None)
     seqrnk.columns = ["Sequence", "Score"]
 
@@ -73,10 +76,7 @@ def read_seqrnk(seqrnk_file: str, ser_thr_only: bool = False, tyr_only: bool = F
         seqrnk.index = range(len(seqrnk))
     elif tyr_only:
         seqrnk = seqrnk.loc[
-            [
-                seqrnk["Sequence"][i][5] == "Y"
-                for i in range(len(seqrnk))
-            ]
+            [seqrnk["Sequence"][i][5] == "Y" for i in range(len(seqrnk))]
         ]
         seqrnk.index = range(len(seqrnk))
 
@@ -119,7 +119,9 @@ def score_sequence(seq_str: str, pssm_df: pd.DataFrame):
                 p = p * pssm_df.loc[pos, seq_str[i]]
             except KeyError:
                 print("Non-canonical amino acid symbol found in sequence.")
-                print(f"'{seq_str[i]}' was found, but kinase PSSMs can handle the following symbols:")
+                print(
+                    f"'{seq_str[i]}' was found, but kinase PSSMs can handle the following symbols:"
+                )
                 print(f"{' '.join(AA_LIST)}")
     return p
 
@@ -402,8 +404,8 @@ def compute_kinase_activities(
     n_proc: int = 1,
     plot_figures: bool = False,
     out_plot_dir: str = "phosx_output/",
-    ser_thr_only = False,
-    tyr_only = False
+    ser_thr_only=False,
+    tyr_only=False,
 ):
     warnings.simplefilter(action="ignore", category=FutureWarning)
 
@@ -517,7 +519,7 @@ def kinase_activities(
         plot_figures,
         out_plot_dir,
         True,
-        False
+        False,
     )
 
     print("> Computing differential activity of Tyr kinases...", file=sys.stderr)
@@ -533,7 +535,7 @@ def kinase_activities(
         plot_figures,
         out_plot_dir,
         False,
-        True
+        True,
     )
 
     results_df = pd.concat([s_t_kinase_activity_df, y_kinase_activity_df], axis=0)
