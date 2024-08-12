@@ -16,6 +16,7 @@ tqdm = "^4.66.2"
 
 [tool.poetry.scripts]
 phosx = 'phosx.cli:main'
+make-seqrnk = 'phosx.make_seqrnk:main'
 
 [build-system]
 requires = ["poetry-core"]

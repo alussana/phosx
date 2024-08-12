@@ -40,45 +40,18 @@ pip install dist/*.whl
 
 # Usage
 
-```bash
-phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq ST_PSSM_QUANTILES] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-m MIN_N_HITS] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-o OUTPUT_PATH] [-v] seqrnk
-```
-```bash
-positional arguments:
-  seqrnk                Path to the seqrnk file.
-
-options:
-  -h, --help            show this help message and exit
-  -yp Y_PSSM, --y-pssm Y_PSSM
-                        Path to the h5 file storing custom Tyr PSSMs; defaults to built-in PSSMs
-  -stp S_T_PSSM, --s-t-pssm S_T_PSSM
-                        Path to the h5 file storing custom Ser/Thr PSSMs; defaults to built-in PSSMs
-  -yq Y_PSSM_QUANTILES, --y-pssm-quantiles Y_PSSM_QUANTILES
-                        Path to the h5 file storing custom Tyr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
-  -stq ST_PSSM_QUANTILES, --st-pssm-quantiles ST_PSSM_QUANTILES
-                        Path to the h5 file storing custom Ser/Thr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
-  -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
-                        Number of random permutations; default: 1000
-  -stk S_T_N_TOP_KINASES, --s-t-n-top-kinases S_T_N_TOP_KINASES
-                        Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5
-  -yk Y_N_TOP_KINASES, --y-n-top-kinases Y_N_TOP_KINASES
-                        Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5
-  -m MIN_N_HITS, --min-n-hits MIN_N_HITS
-                        Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4
-  -c N_PROC, --n-proc N_PROC
-                        Number of cores used for multithreading; default: 1
-  --plot-figures        Save figures in pdf format; see also --output_dir
-  -d OUTPUT_DIR, --output-dir OUTPUT_DIR
-                        Output files directory; only relevant if used with --plot_figures; defaults to 'phosx_output/'
-  -o OUTPUT_PATH, --output-path OUTPUT_PATH
-                        Main output table; if not specified it will be printed in STDOUT
-  -v, --version         Print package version and exit
-```
-
-Minimal example to run PhosX with default parameters on an example dataset, using up to 8 cores, and redirecting the output table to `kinase_activities.tsv`:
+Run PhosX with default parameters on an example dataset, using up to 8 cores, and redirecting the output table to `kinase_activities.tsv`:
 
 ```bash
 phosx -c 8 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activities.tsv
+```
+
+See the full list of command line options with `phosx -h`.
+
+Alongside the main program, this package also installs `make-seqrnk`. This utily can be used to easily generate a _seqrnk_ file, which is used as input by PhosX, given a list of phosphosites, each one identified by a UniProtAC and residue coordinate. `make-seqrnk` will query the UniProt database to fetch the appropriate subsequences and build the _seqrnk_ file. Run `make-seqrnk -h` for more details, or see an example with: 
+
+```bash
+cat tests/p_list/15_3.tsv | make-seqrnk > 15_3.seqrnk
 ```
 
 # Cite
