@@ -51,7 +51,10 @@ def read_pssms(pssms_h5_file: str):
     return pssm_df_dict
 
 
-def read_seqrnk(seqrnk_file: str):
+def read_seqrnk(seqrnk_file: str, ser_thr_only: bool = False, tyr_only: bool = False):
+    if ser_thr_only and tyr_only:
+        print('W: both ser_thr_only and tyr_only have been set to True. PhosX will consider only Ser/Thr phosphosites in this run.', file=sys.stderr)
+        
     seqrnk = pd.read_csv(seqrnk_file, sep="\t", header=None)
     seqrnk.columns = ["Sequence", "Score"]
 
@@ -60,14 +63,22 @@ def read_seqrnk(seqrnk_file: str):
     seqrnk = seqrnk.dropna(axis=0)
     seqrnk.index = range(len(seqrnk))
 
-    # tmp: only consider S/T phosphosites
-    seqrnk = seqrnk.loc[
-        [
-            seqrnk["Sequence"][i][5] == "S" or seqrnk["Sequence"][i][5] == "T"
-            for i in range(len(seqrnk))
+    if ser_thr_only:
+        seqrnk = seqrnk.loc[
+            [
+                seqrnk["Sequence"][i][5] == "S" or seqrnk["Sequence"][i][5] == "T"
+                for i in range(len(seqrnk))
+            ]
         ]
-    ]
-    seqrnk.index = range(len(seqrnk))
+        seqrnk.index = range(len(seqrnk))
+    elif tyr_only:
+        seqrnk = seqrnk.loc[
+            [
+                seqrnk["Sequence"][i][5] == "Y"
+                for i in range(len(seqrnk))
+            ]
+        ]
+        seqrnk.index = range(len(seqrnk))
 
     return seqrnk
 
@@ -103,9 +114,13 @@ def score_sequence(seq_str: str, pssm_df: pd.DataFrame):
     p = 1
     for i in range(n_pos):
         if seq_str[i] != "_":
-            pos = list(pssm_df.index)[i]
-            p = p * pssm_df.loc[pos, seq_str[i]]
-
+            try:
+                pos = list(pssm_df.index)[i]
+                p = p * pssm_df.loc[pos, seq_str[i]]
+            except KeyError:
+                print("Non-canonical amino acid symbol found in sequence.")
+                print(f"'{seq_str[i]}' was found, but kinase PSSMs can handle the following symbols:")
+                print(f"{' '.join(AA_LIST)}")
     return p
 
 
@@ -355,7 +370,7 @@ def compute_ks_pvalues(
 def compute_activity_score(results_df: pd.DataFrame, max_abs_score: float):
     # compute FDR
     results_df["FDR q value"] = results_df["p value"] * len(results_df)
-    results_df["FDR q value"].loc[results_df["FDR q value"] > 1] = 1
+    results_df.loc[results_df["FDR q value"] > 1, "FDR q value"] = 1
 
     # compute activity score as -log10(FDR), signed with the sign of KS
     activity_score_series = results_df["p value"].copy()
@@ -377,7 +392,7 @@ def compute_activity_score(results_df: pd.DataFrame, max_abs_score: float):
     return results_df
 
 
-def kinase_activities(
+def compute_kinase_activities(
     seqrnk_file: str,
     pssm_h5_file: str,
     pssm_score_quantiles_h5_file: str,
@@ -386,14 +401,15 @@ def kinase_activities(
     min_n_hits: int = 4,
     n_proc: int = 1,
     plot_figures: bool = False,
-    out_plot_dir: str = "phosx_output",
-    out_path=None,
+    out_plot_dir: str = "phosx_output/",
+    ser_thr_only = False,
+    tyr_only = False
 ):
     warnings.simplefilter(action="ignore", category=FutureWarning)
 
     print("    Loading input objects    : ", file=sys.stderr, end="")
     pssm_df_dict = read_pssms(pssm_h5_file)
-    seqrnk = read_seqrnk(seqrnk_file)
+    seqrnk = read_seqrnk(seqrnk_file, ser_thr_only, tyr_only)
     pssm_bg_scores_df = read_pssm_score_quantiles(pssm_score_quantiles_h5_file)
 
     # sort seqrnk by phosphosite score in descending order
@@ -468,11 +484,64 @@ def kinase_activities(
     # compute activity score for all kinases
     results_df = compute_activity_score(results_df, np.log10(n_perm))
 
+    print("DONE", file=sys.stderr, end="\n\n")
+
+    return results_df
+
+
+def kinase_activities(
+    seqrnk_file: str,
+    s_t_pssm_h5_file: str,
+    s_t_pssm_score_quantiles_h5_file: str,
+    y_pssm_h5_file: str,
+    y_pssm_score_quantiles_h5_file: str,
+    n_perm: int = 1000,
+    s_t_n_top_kinases: int = 5,
+    y_n_top_kinases: int = 5,
+    min_n_hits: int = 4,
+    n_proc: int = 1,
+    plot_figures: bool = False,
+    out_plot_dir: str = "phosx_output",
+    out_path=None,
+):
+    print("> Computing differential activity of Ser/Thr kinases...", file=sys.stderr)
+
+    s_t_kinase_activity_df = compute_kinase_activities(
+        seqrnk_file,
+        s_t_pssm_h5_file,
+        s_t_pssm_score_quantiles_h5_file,
+        n_perm,
+        s_t_n_top_kinases,
+        min_n_hits,
+        n_proc,
+        plot_figures,
+        out_plot_dir,
+        True,
+        False
+    )
+
+    print("> Computing differential activity of Tyr kinases...", file=sys.stderr)
+
+    y_kinase_activity_df = compute_kinase_activities(
+        seqrnk_file,
+        y_pssm_h5_file,
+        y_pssm_score_quantiles_h5_file,
+        n_perm,
+        y_n_top_kinases,
+        min_n_hits,
+        n_proc,
+        plot_figures,
+        out_plot_dir,
+        False,
+        True
+    )
+
+    results_df = pd.concat([s_t_kinase_activity_df, y_kinase_activity_df], axis=0)
+
     # export results
     if out_path == None:
         print(results_df.to_csv(sep="\t", header=True, index=True))
     else:
         results_df.to_csv(out_path, sep="\t", header=True, index=True)
-    print("DONE", file=sys.stderr, end="\n\n")
 
     return results_df

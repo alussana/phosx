@@ -14,18 +14,36 @@ def parse_phosx_args():
     )
     parser.add_argument("seqrnk", type=str, help="Path to the seqrnk file.")
     parser.add_argument(
-        "-p",
-        "--pssm",
+        "-yp",
+        "--y-pssm",
         type=str,
-        default=str(path.join(path.dirname(__file__), "data/PSSMs.h5")),
-        help="Path to the h5 file storing custom PSSMs; defaults to built-in PSSMs",
+        default=str(path.join(path.dirname(__file__), "data/Y_PSSMs.h5")),
+        help="Path to the h5 file storing custom Tyr PSSMs; defaults to built-in PSSMs",
     )
     parser.add_argument(
-        "-q",
-        "--pssm-quantiles",
+        "-stp",
+        "--s-t-pssm",
         type=str,
-        default=str(path.join(path.dirname(__file__), "data/pssm_score_quantiles.h5")),
-        help="Path to the h5 file storing custom PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles",
+        default=str(path.join(path.dirname(__file__), "data/S_T_PSSMs.h5")),
+        help="Path to the h5 file storing custom Ser/Thr PSSMs; defaults to built-in PSSMs",
+    )
+    parser.add_argument(
+        "-yq",
+        "--y-pssm-quantiles",
+        type=str,
+        default=str(
+            path.join(path.dirname(__file__), "data/Y_PSSM_score_quantiles.h5")
+        ),
+        help="Path to the h5 file storing custom Tyr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles",
+    )
+    parser.add_argument(
+        "-stq",
+        "--s-t-pssm-quantiles",
+        type=str,
+        default=str(
+            path.join(path.dirname(__file__), "data/S_T_PSSM_score_quantiles.h5")
+        ),
+        help="Path to the h5 file storing custom Ser/Thr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles",
     )
     parser.add_argument(
         "-n",
@@ -35,11 +53,18 @@ def parse_phosx_args():
         help="Number of random permutations; default: 1000",
     )
     parser.add_argument(
-        "-k",
-        "--n-top-kinases",
+        "-stk",
+        "--s-t-n-top-kinases",
         type=int,
         default=5,
-        help="Number of top-scoring kinases potentially associatiated to a given phosphosite; default: 8",
+        help="Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5",
+    )
+    parser.add_argument(
+        "-yk",
+        "--y-n-top-kinases",
+        type=int,
+        default=5,
+        help="Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5",
     )
     parser.add_argument(
         "-m",
@@ -78,7 +103,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="v0.5.4",
+        version="v0.7.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -95,7 +120,7 @@ def main():
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
   
-  Version 0.6.0
+  Version 0.7.0
   Copyright (C) 2024 Alessandro Lussana
   Licence Apache 2.0
   
@@ -107,10 +132,13 @@ def main():
     args = parse_phosx_args()
     kinase_activities(
         args.seqrnk,
-        args.pssm,
-        args.pssm_quantiles,
+        args.s_t_pssm,
+        args.s_t_pssm_quantiles,
+        args.y_pssm,
+        args.y_pssm_quantiles,
         args.n_permutations,
-        args.n_top_kinases,
+        args.s_t_n_top_kinases,
+        args.y_n_top_kinases,
         args.min_n_hits,
         args.n_proc,
         args.plot_figures,
