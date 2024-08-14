@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "phosx"
-version = "0.7.0"
-description = ""
+version = "0.7.1"
+description = "Differential kinase activity inference from phosphosproteomics data"
 authors = ["Alessandro Lussana <alussana@ebi.ac.uk>"]
 readme = "README.md"
 include = ["phosx/data/*"]
