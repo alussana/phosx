@@ -7,11 +7,13 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.7.1`
+> Current version: `0.8.0`
 
 > Research paper: [https://doi.org/10.1101/2024.03.22.586304](https://doi.org/10.1101/2024.03.22.586304)
 
-> Benchmark repository: [https://github.com/alussana/phosx-benchmark](https://github.com/alussana/phosx-benchmark)
+> Benchmark: [https://github.com/alussana/phosx-benchmark](https://github.com/alussana/phosx-benchmark)
+
+> Data: [https://github.com/alussana/kinase_pssms](https://github.com/alussana/kinase_pssms)
 
 # Overview
 

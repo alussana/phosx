@@ -237,9 +237,9 @@ def compute_ks(
     # make table of running sum deltas for each kinase
     running_sum_deltas_df = P_hit_df.copy()
     for kinase in running_sum_deltas_df.columns:
-        running_sum_deltas_df[kinase].loc[
-            running_sum_deltas_df[kinase] == 0
-        ] = P_miss_series[kinase]
+        running_sum_deltas_df[kinase].loc[running_sum_deltas_df[kinase] == 0] = (
+            P_miss_series[kinase]
+        )
 
     # compute ks for each kinase
     ks_series = running_sum_deltas_df.apply(
@@ -274,9 +274,9 @@ def compute_null_ks(seqrnk_series: pd.Series, binarised_pssm_scores: pd.DataFram
     # make table of absolute running sum deltas for each kinase
     running_sum_deltas_df = P_hit_df.copy()
     for kinase in running_sum_deltas_df.columns:
-        running_sum_deltas_df[kinase].loc[
-            running_sum_deltas_df[kinase] == 0
-        ] = P_miss_series[kinase]
+        running_sum_deltas_df[kinase].loc[running_sum_deltas_df[kinase] == 0] = (
+            P_miss_series[kinase]
+        )
 
     # compute ks for each kinase
     ks_series = running_sum_deltas_df.apply(ks_statistic, axis=0)
