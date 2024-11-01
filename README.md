@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.9.0`
+> Current version: `0.9.2`
 
 > Research paper: [https://doi.org/10.1101/2024.03.22.586304](https://doi.org/10.1101/2024.03.22.586304)
 
@@ -247,13 +247,13 @@ The kinase enrichment score ($ES$) corresponds to the maximum deviation from $0$
 For each kinase, PhosX computes an empirical _p_ value of the $ES$ by generating a null distribution of the $ES$ through random permutations of the phosphosite ranks. A False Discovery Rate (FDR) _q_ value is also calculated by applying the Bonferroni method considering the number of kinases independently tested. The number of permutations is a tunable parameter but we recommend performing at least $10^4$ random permutations to be able to compute FDR values $< 0.05$.
 
 ## Kinase activity score
-￼
+
 The activity score for a given kinase is defined as:
-￼
+
 ```math
 Activity = -\log_{10}{(p)} * \texttt{sign}(ES)
 ```
-￼
+
 where \texttt{sign} is the sign function, and $-log_{10}{(p)}$ is capped at the smallest computable \textit{p} value different from $0$, _i.e._ the inverse of the number of random permutations.
 Activity scores greater than $0$ denote kinase activation, while the opposite corresponds to kinase inhibition.
 
