@@ -215,7 +215,6 @@ For each kinase PSSM, a score is assigned to each phosphopeptide sequence $S$ th
 $$
 \texttt{score}(S,k) := \prod_{i=-5}^{4}  
 \begin{cases}
-    %M^{k}_{i,S_i} * \frac{1}{p{S_i}} , & \text{if } S_i \neq \texttt{'\_'} \\
     M^{k}_{i,S_i}, & \text{if } S_i \neq \texttt{'\_'} \\
     1, & \text{if } S_i = \texttt{'\_'} 
 \end{cases}
