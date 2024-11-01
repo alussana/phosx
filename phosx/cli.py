@@ -67,11 +67,18 @@ def parse_phosx_args():
         help="Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5",
     )
     parser.add_argument(
-        "-m",
+        "-mh",
         "--min-n-hits",
         type=int,
         default=4,
         help="Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4",
+    )
+    parser.add_argument(
+        "-mp",
+        "--min-quantile",
+        type=int,
+        default=0.95,
+        help="Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95",
     )
     parser.add_argument(
         "-c",
@@ -103,7 +110,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="v0.8.0",
+        version="v0.9.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -120,7 +127,7 @@ def main():
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
   
-  Version 0.8.0
+  Version 0.9.0
   Copyright (C) 2024 Alessandro Lussana
   Licence Apache 2.0
   
@@ -130,6 +137,7 @@ def main():
     )
 
     args = parse_phosx_args()
+    
     kinase_activities(
         args.seqrnk,
         args.s_t_pssm,
@@ -140,6 +148,7 @@ def main():
         args.s_t_n_top_kinases,
         args.y_n_top_kinases,
         args.min_n_hits,
+        args.min_quantile,
         args.n_proc,
         args.plot_figures,
         args.output_dir,
