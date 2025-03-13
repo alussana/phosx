@@ -89,17 +89,25 @@ def read_pssm_score_quantiles(pssm_score_quantiles_h5_file: str):
     return pssm_bg_scores_df
 
 
-def quantile_scaling(x: pd.Series, pssm_bg_scores_df: pd.DataFrame):
-    pssm_bg_scores_series = pssm_bg_scores_df[x.name]
-    quantile_scores_list = []
+def quantile_scaling(x: pd.Series, sorted_bg_scores_dict: dict):
+    """
+    Compute quantile scores for the given series x using precomputed sorted background scores.
 
-    den = len(pssm_bg_scores_series)
+    Args:
+        x (pd.Series): Series of scores for a specific kinase.
+        sorted_bg_scores_dict (dict): Dictionary with kinase names as keys and sorted numpy arrays of background scores as values.
 
-    for i in range(len(x)):
-        num = (pssm_bg_scores_series <= x[i]).sum()
-        quantile_scores_list.append(num / den)
+    Returns:
+        pd.Series: Series of quantile scores corresponding to x.
+    """
+    sorted_bg_scores = sorted_bg_scores_dict[x.name]
+    x_values = x.values
+    
+    num = np.searchsorted(sorted_bg_scores, x_values, side='right')
+    den = len(sorted_bg_scores)
+    quantile_scores = num / den
 
-    scores = pd.Series(quantile_scores_list)
+    scores = pd.Series(quantile_scores, index=x.index)
     scores.name = x.name
 
     return scores
@@ -427,9 +435,10 @@ def compute_kinase_activities(
 
     print("Assigning kinases to targets : ", file=sys.stderr, end="")
     # quantile-scale the PSSM scores for each kinase
+    sorted_bg_scores_dict = {kinase: np.sort(pssm_bg_scores_df[kinase].values) for kinase in pssm_bg_scores_df.columns}
     pssm_scoring_scaled01_df = pssm_scoring_df.apply(
         quantile_scaling,
-        args=[pssm_bg_scores_df],
+        args=[sorted_bg_scores_dict],
         axis=0,
     )
 
