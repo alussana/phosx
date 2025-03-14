@@ -5,7 +5,6 @@ import sys
 import pandas as pd
 import numpy as np
 import h5py
-from random import shuffle
 from multiprocessing import Pool
 from tqdm import tqdm
 import warnings

@@ -5,3 +5,4 @@ phosx/__pycache__/
 *.ipynb
 *.tmp
 *.bck
+*.out
