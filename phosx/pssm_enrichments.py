@@ -5,7 +5,6 @@ import sys
 import pandas as pd
 import numpy as np
 import h5py
-from random import shuffle
 from multiprocessing import Pool
 from tqdm import tqdm
 import warnings
@@ -89,17 +88,25 @@ def read_pssm_score_quantiles(pssm_score_quantiles_h5_file: str):
     return pssm_bg_scores_df
 
 
-def quantile_scaling(x: pd.Series, pssm_bg_scores_df: pd.DataFrame):
-    pssm_bg_scores_series = pssm_bg_scores_df[x.name]
-    quantile_scores_list = []
+def quantile_scaling(x: pd.Series, sorted_bg_scores_dict: dict):
+    """
+    Compute quantile scores for the given series x using precomputed sorted background scores.
 
-    den = len(pssm_bg_scores_series)
+    Args:
+        x (pd.Series): Series of scores for a specific kinase.
+        sorted_bg_scores_dict (dict): Dictionary with kinase names as keys and sorted numpy arrays of background scores as values.
 
-    for i in range(len(x)):
-        num = (pssm_bg_scores_series <= x[i]).sum()
-        quantile_scores_list.append(num / den)
+    Returns:
+        pd.Series: Series of quantile scores corresponding to x.
+    """
+    sorted_bg_scores = sorted_bg_scores_dict[x.name]
+    x_values = x.values
+    
+    num = np.searchsorted(sorted_bg_scores, x_values, side='right')
+    den = len(sorted_bg_scores)
+    quantile_scores = num / den
 
-    scores = pd.Series(quantile_scores_list)
+    scores = pd.Series(quantile_scores, index=x.index)
     scores.name = x.name
 
     return scores
@@ -173,18 +180,12 @@ def ks_statistic(
 ):
     kinase = deltas_series.name
 
-    running_sum = 0
-    running_sum_to_i = [0]
-
-    for i in range(len(deltas_series)):
-        running_sum = running_sum + deltas_series.iloc[i]
-        running_sum_to_i.append(running_sum)
-
-    max_ks = max(running_sum_to_i)
-    min_ks = min(running_sum_to_i)
+    cumsum = deltas_series.cumsum()
+    max_ks = cumsum.max()
+    min_ks = cumsum.min()
 
     if plot_bool:
-        data = pd.Series(running_sum_to_i)
+        data = pd.Series(cumsum)
 
         import matplotlib.pyplot as plt
         import seaborn as sns
@@ -253,40 +254,30 @@ def compute_ks(
 
 
 def compute_null_ks(seqrnk_series: pd.Series, binarised_pssm_scores: pd.DataFrame):
-    # randomly permute phosphosites
-    idx_list = list(seqrnk_series.index)
-    shuffle(idx_list)
-    shuffled_binarised_pssm_scores = binarised_pssm_scores.copy()
-    shuffled_binarised_pssm_scores.index = idx_list
-    shuffled_binarised_pssm_scores = shuffled_binarised_pssm_scores.sort_index()
+    # Shuffle the rows of binarised_pssm_scores while keeping the index aligned
+    shuffled_binarised_pssm_scores = binarised_pssm_scores.sample(frac=1).reset_index(drop=True)
+    
+    # Compute number of non-hits for each kinase
+    Nnh_series = (shuffled_binarised_pssm_scores == 0).sum(axis=0)
 
-    # ranking metric for hits for each kinase
-    rj_df = shuffled_binarised_pssm_scores.apply(
-        lambda x: x * seqrnk_series.abs(), axis=0
-    )
-
-    # number of non-hits for each kinase
-    Nnh_series = rj_df.apply(lambda x: len(x.loc[x == 0]), axis=0)
-
-    # scale ranking metric for hits for each kinase
-    P_hit_df = rj_df.apply(lambda x: x / x.sum(), axis=0)
-
-    # assign decrement score for non-hits in order to sum to -1 for each kinase
+    seqrnk_abs_series = seqrnk_series.abs()
+    
+    # Compute ranking metric for hits
+    rj_df = shuffled_binarised_pssm_scores.mul(seqrnk_abs_series, axis=0)
+    
+    # Scale ranking metric for hits to sum to 1 for each kinase
+    P_hit_df = rj_df / rj_df.sum(axis=0)
+    
+    # Compute decrement score for non-hits
     P_miss_series = -1 / Nnh_series
-
-    # make table of absolute running sum deltas for each kinase
-    running_sum_deltas_df = P_hit_df.copy()
-    for kinase in running_sum_deltas_df.columns:
-        running_sum_deltas_df[kinase].loc[running_sum_deltas_df[kinase] == 0] = (
-            P_miss_series[kinase]
-        )
-
-    # compute ks for each kinase
+    
+    # Compute running sum deltas: P_hit where hit, P_miss where miss
+    running_sum_deltas_df = P_hit_df.where(P_hit_df != 0, P_miss_series, axis=1)
+    
+    # Compute KS statistic for each kinase
     ks_series = running_sum_deltas_df.apply(ks_statistic, axis=0)
-
-    ks_df = pd.DataFrame([ks_series])
-
-    return ks_df
+    
+    return pd.DataFrame([ks_series])
 
 
 def compute_ks_empirical_distrib(
@@ -443,9 +434,10 @@ def compute_kinase_activities(
 
     print("Assigning kinases to targets : ", file=sys.stderr, end="")
     # quantile-scale the PSSM scores for each kinase
+    sorted_bg_scores_dict = {kinase: np.sort(pssm_bg_scores_df[kinase].values) for kinase in pssm_bg_scores_df.columns}
     pssm_scoring_scaled01_df = pssm_scoring_df.apply(
         quantile_scaling,
-        args=[pssm_bg_scores_df],
+        args=[sorted_bg_scores_dict],
         axis=0,
     )
 
@@ -491,6 +483,8 @@ def compute_kinase_activities(
 
     # compute activity score for all kinases
     results_df = compute_activity_score(results_df, np.log10(n_perm))
+
+    results_df["Activity Score"] = results_df["Activity Score"].round(decimals=4)
 
     print("DONE", file=sys.stderr, end="\n\n")
 
