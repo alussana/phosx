@@ -7,9 +7,9 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.10.0`
+> Current version: `0.11.0`
 
-> Research paper: [https://doi.org/10.1101/2024.03.22.586304](https://doi.org/10.1101/2024.03.22.586304)
+> Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697)
 
 > Benchmark: [https://github.com/alussana/phosx-benchmark](https://github.com/alussana/phosx-benchmark)
 

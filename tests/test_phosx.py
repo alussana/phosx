@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from phosx.pssm_enrichments import kinase_activities
+from phosx.cli import phosx
 from os import path
 
 
 def test_kinase_activities_1core():
-    kinase_activities(
+    phosx(
         seqrnk_file=str(
             path.join(
                 path.dirname(__file__), "seqrnk/koksal2018_log2.fold.change.8min.seqrnk"
@@ -31,7 +31,7 @@ def test_kinase_activities_1core():
 
 
 def test_kinase_activities_4cores():
-    kinase_activities(
+    phosx(
         seqrnk_file=str(
             path.join(
                 path.dirname(__file__), "seqrnk/koksal2018_log2.fold.change.8min.seqrnk"
@@ -57,7 +57,7 @@ def test_kinase_activities_4cores():
 
 
 def test_kinase_activities_w_figures():
-    kinase_activities(
+    phosx(
         seqrnk_file=str(
             path.join(
                 path.dirname(__file__), "seqrnk/koksal2018_log2.fold.change.8min.seqrnk"
