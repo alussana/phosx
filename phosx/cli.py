@@ -47,6 +47,13 @@ def parse_phosx_args():
         help="Path to the h5 file storing custom Ser/Thr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles",
     )
     parser.add_argument(
+        "-no-uae",
+        "--no-upstream-activation-evidence",
+        action="store_true",
+        default=False,
+        help="Do not compute upstream activation evidence to modify the activity scores of kinases with correlated activity; default: False",
+    )
+    parser.add_argument(
         "-meta",
         "--kinase-metadata",
         type=str,
@@ -75,25 +82,32 @@ def parse_phosx_args():
         help="Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5",
     )
     parser.add_argument(
-        "-stqth",
-        "--s-t-quantile-threshold",
+        "-astqth",
+        "--a-loop-s-t-quantile-threshold",
         type=float,
         default=0.95,
         help="Minimum Ser/Thr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95",
     )
     parser.add_argument(
-        "-yqth",
-        "--y-quantile-threshold",
+        "-ayqth",
+        "--a-loop-y-quantile-threshold",
         type=float,
         default=0.95,
         help="Minimum Tyr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95",
     )
     parser.add_argument(
-        "-rt",
-        "--redundancy-threshold",
+        "-urt",
+        "--upreg-redundancy-threshold",
         type=float,
-        default=0.75,
-        help="Minimum Jaccard index of target substrates to consider two kinase potentially having correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.75",
+        default=0.5,
+        help="Minimum Jaccard index of target substrates to consider two upregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5",
+    )
+    parser.add_argument(
+        "-drt",
+        "--downreg-redundancy-threshold",
+        type=float,
+        default=0.5,
+        help="Minimum Jaccard index of target substrates to consider two downregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5",
     )
     parser.add_argument(
         "-mh",
@@ -105,7 +119,7 @@ def parse_phosx_args():
     parser.add_argument(
         "-mp",
         "--min-quantile",
-        type=int,
+        type=float,
         default=0.95,
         help="Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95",
     )
@@ -146,7 +160,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.11.0",
+        version="0.12.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -164,10 +178,12 @@ def phosx(
     y_n_top_kinases: int = 10,
     min_n_hits: int = 4,
     min_quantile: float = 0.95,
+    no_upstream_activation_evidence: bool = False,
     metadata_h5_file: str = str(path.join(path.dirname(__file__), "../phosx/data/kinase_metadata.h5")),
-    s_t_quantile_threshold: int = 0.95,
-    y_quantile_threshold: int = 0.95,
-    redundacy_threshold: float = 0.75,
+    a_loop_s_t_quantile_threshold: int = 0.95,
+    a_loop_y_quantile_threshold: int = 0.95,
+    upreg_redundancy_threshold: float = 0.5,
+    downreg_redundancy_threshold: float = 0.5,
     decay_factor: float = 64,
     n_proc: int = 1,
     plot_figures: bool = False,
@@ -212,57 +228,56 @@ def phosx(
 
     activity_df = pd.concat([s_t_kinase_activity_df, y_kinase_activity_df], axis=0)
 
-    print("> Computing upstream activation evidence (upregulation) ...", file=sys.stderr)
+    if no_upstream_activation_evidence == False:
+        print("> Computing upstream activation evidence (upregulation) ...", file=sys.stderr)
 
-    upreg_activation_series = compute_activation_evidence(
-        activity_df,
-        s_t_assigned_substrates_df,
-        y_assigned_substrates_df,
-        s_t_pssm_h5_file,
-        s_t_pssm_score_quantiles_h5_file,
-        y_pssm_h5_file,
-        y_pssm_score_quantiles_h5_file,
-        metadata_h5_file,
-        s_t_quantile_threshold,
-        y_quantile_threshold,
-        redundacy_threshold,
-        decay_factor,
-        True,
-        n_proc,
-        plot_figures,
-        out_plot_dir,
-        out_path,
-    )
+        upreg_activation_series = compute_activation_evidence(
+            activity_df,
+            s_t_assigned_substrates_df,
+            y_assigned_substrates_df,
+            s_t_pssm_h5_file,
+            s_t_pssm_score_quantiles_h5_file,
+            y_pssm_h5_file,
+            y_pssm_score_quantiles_h5_file,
+            metadata_h5_file,
+            a_loop_s_t_quantile_threshold,
+            a_loop_y_quantile_threshold,
+            upreg_redundancy_threshold,
+            decay_factor,
+            True,
+            n_proc,
+            plot_figures,
+            out_plot_dir,
+            out_path,
+        )
 
-    print("> Computing downstream activation evidence (downregulation) ...", file=sys.stderr)
+        print("> Computing downstream activation evidence (downregulation) ...", file=sys.stderr)
 
-    downreg_activation_series = compute_activation_evidence(
-        activity_df,
-        s_t_assigned_substrates_df,
-        y_assigned_substrates_df,
-        s_t_pssm_h5_file,
-        s_t_pssm_score_quantiles_h5_file,
-        y_pssm_h5_file,
-        y_pssm_score_quantiles_h5_file,
-        metadata_h5_file,
-        s_t_quantile_threshold,
-        y_quantile_threshold,
-        redundacy_threshold,
-        decay_factor,
-        False,
-        n_proc,
-        plot_figures,
-        out_plot_dir,
-        out_path,
-    )
+        downreg_activation_series = compute_activation_evidence(
+            activity_df,
+            s_t_assigned_substrates_df,
+            y_assigned_substrates_df,
+            s_t_pssm_h5_file,
+            s_t_pssm_score_quantiles_h5_file,
+            y_pssm_h5_file,
+            y_pssm_score_quantiles_h5_file,
+            metadata_h5_file,
+            a_loop_s_t_quantile_threshold,
+            a_loop_y_quantile_threshold,
+            downreg_redundancy_threshold,
+            decay_factor,
+            False,
+            n_proc,
+            plot_figures,
+            out_plot_dir,
+            out_path,
+        )
 
-    activation_evidence_series = pd.concat([upreg_activation_series, downreg_activation_series], axis=0).loc[list(activity_df.index)]
+        activation_evidence_series = pd.concat([upreg_activation_series, downreg_activation_series], axis=0).loc[list(activity_df.index)]
 
-    activity_df = activity_df.rename(columns={"Activity Score": "Legacy Activity Score"})
+        #activity_df = activity_df.rename(columns={"Activity Score": "Legacy Activity Score"})
 
-    activity_df["Activity Score"] = activation_evidence_series
-
-    #activity_df["Activation Evidence"] = activation_evidence_series
+        activity_df["Activity Score"] = activation_evidence_series
 
     # export results
     if out_path == None:
@@ -283,7 +298,7 @@ def main():
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
   
-  Version 0.11.0
+  Version 0.12.0
   Copyright (C) 2025 Alessandro Lussana
   Licence Apache 2.0
   
@@ -305,10 +320,12 @@ def main():
         args.y_n_top_kinases,
         args.min_n_hits,
         args.min_quantile,
+        args.no_upstream_activation_evidence,
         args.kinase_metadata,
-        args.s_t_quantile_threshold,
-        args.y_quantile_threshold,
-        args.redundancy_threshold,
+        args.a_loop_s_t_quantile_threshold,
+        args.a_loop_y_quantile_threshold,
+        args.upreg_redundancy_threshold,
+        args.downreg_redundancy_threshold,
         args.decay_factor,
         args.n_proc,
         args.plot_figures,

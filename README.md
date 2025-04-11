@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.11.0`
+> Current version: `0.12.0`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697)
 
@@ -23,7 +23,9 @@
   <br>
 </p>
 
-PhosX infers differential kinase activities from phosphoproteomics data without requiring any prior knowledge database of kinase-phosphosite associations. PhosX assigns the detected phosphopeptides to potential upstream kinases based on experimentally determined substrate sequence specificities, and it tests the enrichment of a kinase's potential substrates in the extremes of a ranked list of phosphopeptides using a Kolmogorov-Smirnov-like statistic. A _p_ value for this statistic is extracted empirically by random permutations of the phosphosite ranks.
+PhosX infers differential kinase activities from phosphoproteomics data without requiring any prior knowledge database of kinase-phosphosite associations. PhosX assigns the detected phosphopeptides to potential upstream kinases based on experimentally determined substrate sequence specificities, and it tests the enrichment of a kinase's potential substrates in the extremes of a ranked list of phosphopeptides using a Kolmogorov-Smirnov-like statistic. A _p_ value for this statistic is extracted empirically by random permutations of the phosphosite ranks. By considering the A-loop sequence of kinase domains, PhosX refines the inferred kinase activity changes by computing the [_upstream activation evidence_](#upstream-activation-evidence), further improving accuracy.
+
+In the [benchmark](https://github.com/alussana/phosx-benchmark) PhosX consistently outperformed popular alternative methods, including KSTAR, KSEA, Z-score, Kinex, and PTM-SEA, in identifying up-regulated kinases, making this an ideal tool to discover potential therapeutic targets for kinase inhibitors. All competing methods except Kinex are based on prior knowledge of kinase-substrate associations.
 
 # Installation
 
@@ -50,49 +52,76 @@ Example: run PhosX with default parameters on an example dataset, using up to 8 
 phosx -c 8 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activities.tmp
 ```
 
-A full description of the command line options can be viewed with `phosx -h`:
+<details>
+  <summary>A brief description of the command line options can be viewed with `phosx -h`:</summary>
 
-```bash 
-usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-mh MIN_N_HITS] [-mp MIN_QUANTILE] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR]
-             [-o OUTPUT_PATH] [-v]
-             seqrnk
+  ```bash
+    
+    ██████╗░██╗░░██╗░█████╗░░██████╗██╗░░██╗
+    ██╔══██╗██║░░██║██╔══██╗██╔════╝╚██╗██╔╝
+    ██████╔╝███████║██║░░██║╚█████╗░░╚███╔╝░
+    ██╔═══╝░██╔══██║██║░░██║░╚═══██╗░██╔██╗░
+    ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
+    ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Kinase activity inference from phosphosproteomics data based on substrate sequence specificity
+    Version 0.12.0
+    Copyright (C) 2025 Alessandro Lussana
+    Licence Apache 2.0
 
-positional arguments:
-  seqrnk                Path to the seqrnk file.
+    Command: /home/alussana/Xiv_local/venvs/phosx/bin/phosx -h
+    usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-no-uae] [-meta KINASE_METADATA] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-astqth A_LOOP_S_T_QUANTILE_THRESHOLD] [-ayqth A_LOOP_Y_QUANTILE_THRESHOLD] [-urt UPREG_REDUNDANCY_THRESHOLD] [-drt DOWNREG_REDUNDANCY_THRESHOLD] [-mh MIN_N_HITS] [-mp MIN_QUANTILE]
+                 [-df1 DECAY_FACTOR] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-o OUTPUT_PATH] [-v]
+                 seqrnk
 
-options:
-  -h, --help            show this help message and exit
-  -yp Y_PSSM, --y-pssm Y_PSSM
-                        Path to the h5 file storing custom Tyr PSSMs; defaults to built-in PSSMs
-  -stp S_T_PSSM, --s-t-pssm S_T_PSSM
-                        Path to the h5 file storing custom Ser/Thr PSSMs; defaults to built-in PSSMs
-  -yq Y_PSSM_QUANTILES, --y-pssm-quantiles Y_PSSM_QUANTILES
-                        Path to the h5 file storing custom Tyr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
-  -stq S_T_PSSM_QUANTILES, --s-t-pssm-quantiles S_T_PSSM_QUANTILES
-                        Path to the h5 file storing custom Ser/Thr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
-  -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
-                        Number of random permutations; default: 1000
-  -stk S_T_N_TOP_KINASES, --s-t-n-top-kinases S_T_N_TOP_KINASES
-                        Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5
-  -yk Y_N_TOP_KINASES, --y-n-top-kinases Y_N_TOP_KINASES
-                        Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5
-  -mh MIN_N_HITS, --min-n-hits MIN_N_HITS
-                        Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4
-  -mp MIN_QUANTILE, --min-quantile MIN_QUANTILE
-                        Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95
-  -c N_PROC, --n-proc N_PROC
-                        Number of cores used for multithreading; default: 1
-  --plot-figures        Save figures in pdf format; see also --output_dir
-  -d OUTPUT_DIR, --output-dir OUTPUT_DIR
-                        Output files directory; only relevant if used with --plot_figures; defaults to 'phosx_output/'
-  -o OUTPUT_PATH, --output-path OUTPUT_PATH
-                        Main output table; if not specified it will be printed in STDOUT
-  -v, --version         Print package version and exit
-```
+  Data-driven differential kinase activity inference from phosphosproteomics data
 
-For a full description of the method please see the [Method](#method) section and the [manuscript](https://doi.org/10.1101/2024.03.22.586304).
+  positional arguments:
+    seqrnk                Path to the seqrnk file.
+
+  options:
+    -h, --help            show this help message and exit
+    -yp Y_PSSM, --y-pssm Y_PSSM
+                          Path to the h5 file storing custom Tyr PSSMs; defaults to built-in PSSMs
+    -stp S_T_PSSM, --s-t-pssm S_T_PSSM
+                          Path to the h5 file storing custom Ser/Thr PSSMs; defaults to built-in PSSMs
+    -yq Y_PSSM_QUANTILES, --y-pssm-quantiles Y_PSSM_QUANTILES
+                          Path to the h5 file storing custom Tyr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
+    -stq S_T_PSSM_QUANTILES, --s-t-pssm-quantiles S_T_PSSM_QUANTILES
+                          Path to the h5 file storing custom Ser/Thr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
+    -no-uae, --no-upstream-activation-evidence
+                          Do not compute upstream activation evidence to modify the activity scores of kinases with correlated activity; default: False
+    -meta KINASE_METADATA, --kinase-metadata KINASE_METADATA
+                          Path to the h5 file storing kinase metadata ("aloop_seq"); defaults to built-in metadata
+    -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
+                          Number of random permutations; default: 10000
+    -stk S_T_N_TOP_KINASES, --s-t-n-top-kinases S_T_N_TOP_KINASES
+                          Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5
+    -yk Y_N_TOP_KINASES, --y-n-top-kinases Y_N_TOP_KINASES
+                          Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5
+    -astqth A_LOOP_S_T_QUANTILE_THRESHOLD, --a-loop-s-t-quantile-threshold A_LOOP_S_T_QUANTILE_THRESHOLD
+                          Minimum Ser/Thr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95
+    -ayqth A_LOOP_Y_QUANTILE_THRESHOLD, --a-loop-y-quantile-threshold A_LOOP_Y_QUANTILE_THRESHOLD
+                          Minimum Tyr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95
+    -urt UPREG_REDUNDANCY_THRESHOLD, --upreg-redundancy-threshold UPREG_REDUNDANCY_THRESHOLD
+                          Minimum Jaccard index of target substrates to consider two upregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5
+    -drt DOWNREG_REDUNDANCY_THRESHOLD, --downreg-redundancy-threshold DOWNREG_REDUNDANCY_THRESHOLD
+                          Minimum Jaccard index of target substrates to consider two downregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5
+    -mh MIN_N_HITS, --min-n-hits MIN_N_HITS
+                          Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4
+    -mp MIN_QUANTILE, --min-quantile MIN_QUANTILE
+                          Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95
+    -df1 DECAY_FACTOR, --decay-factor DECAY_FACTOR
+                          Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 64
+    -c N_PROC, --n-proc N_PROC
+                          Number of cores used for multithreading; default: 1
+    --plot-figures        Save figures in pdf format; see also --output_dir
+    -d OUTPUT_DIR, --output-dir OUTPUT_DIR
+                          Output files directory; only relevant if used with --plot_figures; defaults to 'phosx_output/'
+    -o OUTPUT_PATH, --output-path OUTPUT_PATH
+                          Main output table; if not specified it will be printed in STDOUT
+    -v, --version         Print package version and exit
+  ```
+</details>
 
 ## Input
 
@@ -115,26 +144,31 @@ RQKSTYTSYP      3.114077
 ETKSLYPSSE      3.04653
 ```
 
-Alongside the main program, this package also installs `make-seqrnk`. This utily can be used to help generating a _seqrnk_ file given a list of phosphosites, each one identified by a UniProt Acession Number and residue coordinate. `make-seqrnk` will query the [UniProt](https://www.uniprot.org) database to fetch the appropriate subsequences to build the _seqrnk_ file. See `make-seqrnk -h` for more details: 
-
-```bash
-usage: make-seqrnk [-h] [-i INPUT] [-o OUTPUT]
-
-Make a seqrnk file to be used to compute differential kinase activity with PhosX
-
-options:
-  -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        Path of the input phosphosites to be converted in seqrnk format. It should be a TSV file where the 1st column is the UniProtAC (str), the 2nd is the sequence coordinate (int), and the 3rd is the logFC (float); defaults to STDIN
-  -o OUTPUT, --output OUTPUT
-                        Path of the seqrnk file; if not specified it will be printed in STDOUT
-```
+Alongside the main program, this package also installs `make-seqrnk`. This utily can be used to help generating a _seqrnk_ file given a list of phosphosites, each one identified by a UniProt Acession Number and residue coordinate. `make-seqrnk` will query the [UniProt](https://www.uniprot.org) database to fetch the appropriate subsequences to build the _seqrnk_ file. 
 
 Run an example:
 
 ```bash
 cat tests/p_list/15_3.tsv | make-seqrnk > 15_3.seqrnk
 ```
+
+<details>
+  <summary>See `make-seqrnk -h` for more details:</summary>
+
+  ```bash
+  usage: make-seqrnk [-h] [-i INPUT] [-o OUTPUT]
+
+  Make a seqrnk file to be used to compute differential kinase activity with PhosX
+
+  options:
+    -h, --help            show this help message and exit
+    -i INPUT, --input INPUT
+                          Path of the input phosphosites to be converted in seqrnk format. It should be a TSV file where the 1st column is the UniProtAC (str), the 2nd is the sequence coordinate (int), and the 3rd is the logFC (float); defaults to STDIN
+    -o OUTPUT, --output OUTPUT
+                          Path of the seqrnk file; if not specified it will be printed in STDOUT
+  ```
+</details>
+
 
 ### PSSMs
 
@@ -184,6 +218,10 @@ def read_pssm_score_quantiles(pssm_score_quantiles_h5_file: str):
 
     return pssm_bg_scores_df
 ```
+
+### Kinases metadata
+
+[...]
 
 ## Output
 
@@ -257,25 +295,13 @@ Activity = -\log_{10}{(p)} * \texttt{sign}(ES)
 where \texttt{sign} is the sign function, and $-log_{10}{(p)}$ is capped at the smallest computable \textit{p} value different from $0$, _i.e._ the inverse of the number of random permutations.
 Activity scores greater than $0$ denote kinase activation, while the opposite corresponds to kinase inhibition.
 
+## Upstream activation evidence
+
+[...]
+
 # Cite
 
 Please cite one of the following references if you use PhosX in your work.
-
-## BioRxiv
-
-BibTeX:
-
-```bibtex
-@article{Lussana2024,
-  title = {PhosX: data-driven kinase activity inference from phosphoproteomics experiments},
-  url = {http://dx.doi.org/10.1101/2024.03.22.586304},
-  DOI = {10.1101/2024.03.22.586304},
-  publisher = {Cold Spring Harbor Laboratory},
-  author = {Lussana,  Alessandro and Petsalaki,  Evangelia},
-  year = {2024},
-  month = mar 
-}
-```
 
 ## Bioinformatics
 
@@ -296,5 +322,21 @@ BibTeX:
     doi = {10.1093/bioinformatics/btae697},
     url = {https://doi.org/10.1093/bioinformatics/btae697},
     eprint = {https://academic.oup.com/bioinformatics/article-pdf/40/12/btae697/60972735/btae697.pdf},
+}
+```
+
+## BioRxiv
+
+BibTeX:
+
+```bibtex
+@article{Lussana2024,
+  title = {PhosX: data-driven kinase activity inference from phosphoproteomics experiments},
+  url = {http://dx.doi.org/10.1101/2024.03.22.586304},
+  DOI = {10.1101/2024.03.22.586304},
+  publisher = {Cold Spring Harbor Laboratory},
+  author = {Lussana,  Alessandro and Petsalaki,  Evangelia},
+  year = {2024},
+  month = mar 
 }
 ```
