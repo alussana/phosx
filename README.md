@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.12.0`
+> Current version: `0.12.1`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697)
 
@@ -64,7 +64,7 @@ phosx -c 8 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
     ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
     ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-    Version 0.12.0
+    Version 0.12.1
     Copyright (C) 2025 Alessandro Lussana
     Licence Apache 2.0
 
@@ -289,7 +289,7 @@ For each kinase, PhosX computes an empirical _p_ value of the $ES$ by generating
 The activity score for a given kinase is defined as:
 
 ```math
-Activity = -\log_{10}{(p)} * \texttt{sign}(ES)
+Activity = -\log_{10}{(p)} \cdot \texttt{sign}(ES)
 ```
 
 where \texttt{sign} is the sign function, and $-log_{10}{(p)}$ is capped at the smallest computable \textit{p} value different from $0$, _i.e._ the inverse of the number of random permutations.
@@ -297,7 +297,53 @@ Activity scores greater than $0$ denote kinase activation, while the opposite co
 
 ## Upstream activation evidence
 
-[...]
+Kinases that are more closely evolutionarily related tend to have more similar PSSMs, leading to a correlation in their inferred differential activities which might not be biologically real. PhosX attempts to find these instances in any given experiment and discriminate the "true" differentially active kinases from the ones whose activity is falsely correlated with them. 
+
+In doing so, PhosX first builds a directed network of kinases to represent the potential of each kinase to phosphorylate the activation loop (A-loop) of any other except itself. Edges are inferred based on the same [PSSM score](#phosphopeptide-scoring) logic used to link the phosphosites to the putative upstream kinases.
+
+If kinases have highly overalpping sets of assigned phosphosites in the experiment, and also a similar differential activity score, then their activity changes are considered to be potentially correlated mostly because of PSSM similarity. In order to prioritize a putative "true" regulated kinase between those candidates, we look for other kinases that target the A-loops of the candidates. The inferred differential activity of such upstream kinases is treated as evidence for the regulation of the downstream targets. If such evidence supports the activity of a specific kinase, then the  change of the other candidates is dampened down, reducing the false positive rate of inferring differentially regulated kinases.
+
+The logic above is implemented in PhosX using the following procedure, which is applyed separately to kinases that are inferred to be upregulated ($a_i \gt 0$) or downregulated ($a_i \lt 0$). For the downregulated kinases we take the absolute value of their activity score and then negate the final modified score.
+
+Let $a$ be the activity vector of the kinases; $a'$ the vector where each element $a'_i$ is the reciprocal of $a_i$; $A$ the diagonal matrix of $a$; $D^T$ the transposed adjacency matrix of the directed kinase network, i.e. a Boolean matrix indicating for each kinase which other kinases may target its A-loop; $C$ the redundancy matrix, a Boolean matrix indicating for each kinase which other kinases have an extensive overlap of substrates and therefore a potentially correlated activity.
+
+We compute $E = D^T \cdot A$, which is the activation evidence matrix, indicating for each kinase the activation coming from every other kinase.
+
+We then obtain $e$, the evidence vector, as the row-wise maximum of $E$, containing the upstream activation evidence of each kinase.
+Let $e'$ be a vector where each element $e'_i$ is the reciprocal of $e_i$.
+
+Eventually, we want to modify $a_i$ (the activity of a kinase $i$) proportionally to:
+
+$$
+m_{ij} = 1 - \Bigr\{ C_{ij} \cdot \Bigl(1 - \frac{e_i}{e_j} \Bigr) \cdot \exp \Bigr[ -d \Bigr( \frac{a_i}{a_j} \Bigl)^2 \Bigl] \Bigr\}
+$$
+
+for whatever kinase $j$ gives the minimum $m_{ij}$, and where $d \in \N$ is the decay factor. $d=64$ by default, and controls how fast $\exp \Bigr[ -d \Bigr( \frac{a_i}{a_j} \Bigl)^2 \Bigl]$ decays from 1 to 0 as $a_i / a_j$ becomes different from $1$.
+
+Namely, we want to disregard the differential activity of kinase $i$ only if kinase $j$ is potentially correlated ($C_{ij} = 1$), _and_ if kinase $i$ and $j$ have similar inferred activities (_i.e._ $a_i/a_j$ is close to $1$), by a degree that is greater when the upstream activation evidence of the kinase $i$ is smaller than the one of kinase $j$ (_i.e._ $e_i/e_j$ is small).
+
+Before applying this formula, we need to first consider some cases regarding the value of $e_i / e_j$:
+
+* $0 > e_i/e_j < 1$, no change is needed;
+* $e_j=0 \implies e_i/e_j = inf$, the competing kinase has no upstream activation evidence, we set $e_i / e_j= 1$ (leading to $m_{ij} = 1$ );
+* $e_i=0 \land e_j=0 \implies e_i/e_j$ is undefined, both kinases have no upstream activation evidence, we set $e_i / e_j= 1$ (leading to $m_{ij} = 1$ );
+* $e_i/e_j \ge 1$, the upstream activation evidence of kinase $i$ is greater than kinase $j$, therefore we don't want to correct $a_i$ and we set $e_i / e_j= 1$ (leading to $m_{ij} = 1$ ).
+
+We can then obtain $F = ee'^T$, the outer product of the evidence vector and its reciprocal, containing the ratio of upstream evidences for each kinase pair. To the elements of $F$ the conditional transformations above have been applied.
+
+Let also be $B = aa'^T$, the outer product of the activity vector and its reciprocal, containing the ratio of inferred activities for each kinase pair; and $X = \exp \Bigr( -d B^2 \Bigl)$, a matrix of values between $0$ and $1$ indicating how similar the inferred activity changes of any two kinases are. 
+
+We can then rewrite the equation for $m_{ij}$ more simply as:
+$$
+m_{ij} = 1 - \Bigr\{ C_{ij} \cdot \Bigl(1 - F_{ij} \Bigr) \cdot X_{ij} \Bigr\}
+$$
+Therefore to find all possible $m_{ij}$ and then, for each $i$, select for the minimum, we first compute the matrix $M$ (using element-wise multiplication of matrices, here denoted using the Hadamard product):
+$$
+M = 1 - \Bigr\{ C \circ \Bigl(1 - F \Bigr) \circ X \Bigr\}
+$$
+and then get $z$, the activity modifier vector, indicating the modifier factor for each kinase, by taking the row-wise minimum of $M$.
+
+Only the differential activity of kinases that have a an A-loop reported in the [metadata](#kinases-metadata) will be modified.
 
 # Cite
 
