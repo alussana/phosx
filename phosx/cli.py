@@ -7,6 +7,7 @@ import pandas as pd
 from phosx.kinase_activity import compute_kinase_activities
 from phosx.activation_evidence import compute_activation_evidence
 
+
 def parse_phosx_args():
     parser = argparse.ArgumentParser(
         prog="phosx",
@@ -58,7 +59,7 @@ def parse_phosx_args():
         "--kinase-metadata",
         type=str,
         default=str(path.join(path.dirname(__file__), "data/kinase_metadata.h5")),
-        help="Path to the h5 file storing kinase metadata (\"aloop_seq\"); defaults to built-in metadata",
+        help='Path to the h5 file storing kinase metadata ("aloop_seq"); defaults to built-in metadata',
     )
     parser.add_argument(
         "-n",
@@ -160,7 +161,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.12.1",
+        version="0.13.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -169,17 +170,27 @@ def parse_phosx_args():
 
 def phosx(
     seqrnk_file: str,
-    s_t_pssm_h5_file: str = str(path.join(path.dirname(__file__), "../phosx/data/S_T_PSSMs.h5")),
-    s_t_pssm_score_quantiles_h5_file: str = str(path.join(path.dirname(__file__), "../phosx/data/S_T_PSSM_score_quantiles.h5")),
-    y_pssm_h5_file: str = str(path.join(path.dirname(__file__), "../phosx/data/Y_PSSMs.h5")),
-    y_pssm_score_quantiles_h5_file: str = str(path.join(path.dirname(__file__), "../phosx/data/Y_PSSM_score_quantiles.h5")),
+    s_t_pssm_h5_file: str = str(
+        path.join(path.dirname(__file__), "../phosx/data/S_T_PSSMs.h5")
+    ),
+    s_t_pssm_score_quantiles_h5_file: str = str(
+        path.join(path.dirname(__file__), "../phosx/data/S_T_PSSM_score_quantiles.h5")
+    ),
+    y_pssm_h5_file: str = str(
+        path.join(path.dirname(__file__), "../phosx/data/Y_PSSMs.h5")
+    ),
+    y_pssm_score_quantiles_h5_file: str = str(
+        path.join(path.dirname(__file__), "../phosx/data/Y_PSSM_score_quantiles.h5")
+    ),
     n_perm: int = 10000,
     s_t_n_top_kinases: int = 5,
     y_n_top_kinases: int = 10,
     min_n_hits: int = 4,
     min_quantile: float = 0.95,
     no_upstream_activation_evidence: bool = False,
-    metadata_h5_file: str = str(path.join(path.dirname(__file__), "../phosx/data/kinase_metadata.h5")),
+    metadata_h5_file: str = str(
+        path.join(path.dirname(__file__), "../phosx/data/kinase_metadata.h5")
+    ),
     a_loop_s_t_quantile_threshold: int = 0.95,
     a_loop_y_quantile_threshold: int = 0.95,
     upreg_redundancy_threshold: float = 0.5,
@@ -229,7 +240,10 @@ def phosx(
     activity_df = pd.concat([s_t_kinase_activity_df, y_kinase_activity_df], axis=0)
 
     if no_upstream_activation_evidence == False:
-        print("> Computing upstream activation evidence (upregulation) ...", file=sys.stderr)
+        print(
+            "> Computing upstream activation evidence (upregulation) ...",
+            file=sys.stderr,
+        )
 
         upreg_activation_series = compute_activation_evidence(
             activity_df,
@@ -251,7 +265,10 @@ def phosx(
             out_path,
         )
 
-        print("> Computing downstream activation evidence (downregulation) ...", file=sys.stderr)
+        print(
+            "> Computing upstream activation evidence (downregulation) ...",
+            file=sys.stderr,
+        )
 
         downreg_activation_series = compute_activation_evidence(
             activity_df,
@@ -273,42 +290,44 @@ def phosx(
             out_path,
         )
 
-        activation_evidence_series = pd.concat([upreg_activation_series, downreg_activation_series], axis=0).loc[list(activity_df.index)]
-
-        #activity_df = activity_df.rename(columns={"Activity Score": "Legacy Activity Score"})
-
-        activity_df["Activity Score"] = activation_evidence_series
+        # activity_df = activity_df.rename(columns={"Activity Score": "Legacy Activity Score"})
+        activity_df.loc[upreg_activation_series.index, "Activity Score"] = (
+            upreg_activation_series
+        )
+        activity_df.loc[downreg_activation_series.index, "Activity Score"] = (
+            downreg_activation_series
+        )
 
     # export results
     if out_path == None:
-        print(activity_df.to_csv(sep="\t", header=True, index=True))
+        print(activity_df.to_csv(sep="\t", na_rep="NA", header=True, index=True))
     else:
-        activity_df.to_csv(out_path, sep="\t", header=True, index=True)
+        activity_df.to_csv(out_path, na_rep="NA", sep="\t", header=True, index=True)
 
-    return activity_df  
+    return activity_df
 
 
 def main():
     print(
         f"""    
-  ██████╗░██╗░░██╗░█████╗░░██████╗██╗░░██╗
-  ██╔══██╗██║░░██║██╔══██╗██╔════╝╚██╗██╔╝
-  ██████╔╝███████║██║░░██║╚█████╗░░╚███╔╝░
-  ██╔═══╝░██╔══██║██║░░██║░╚═══██╗░██╔██╗░
-  ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
-  ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
-  
-  Version 0.12.1
-  Copyright (C) 2025 Alessandro Lussana
-  Licence Apache 2.0
-  
-  Command: {' '.join(sys.argv)}
+██████╗░██╗░░██╗░█████╗░░██████╗██╗░░██╗
+██╔══██╗██║░░██║██╔══██╗██╔════╝╚██╗██╔╝
+██████╔╝███████║██║░░██║╚█████╗░░╚███╔╝░
+██╔═══╝░██╔══██║██║░░██║░╚═══██╗░██╔██╗░
+██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
+╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
+
+Version 0.13.0
+Copyright (C) 2025 Alessandro Lussana
+Licence Apache 2.0
+
+Command: {' '.join(sys.argv)}
     """,
         file=sys.stderr,
     )
 
     args = parse_phosx_args()
-    
+
     phosx(
         args.seqrnk,
         args.s_t_pssm,

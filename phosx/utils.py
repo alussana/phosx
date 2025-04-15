@@ -99,13 +99,14 @@ def hdf5_to_dict(hdf5_file_path):
     """
     Convert an HDF5 file's contents into a nested dictionary recursively,
     with special handling for string datasets.
-    
+
     Args:
         hdf5_file_path (str): Path to the HDF5 file
-        
+
     Returns:
         dict: Nested dictionary containing the HDF5 file's structure and data
     """
+
     def _convert_group(h5_group):
         result = {}
         for key, item in h5_group.items():
@@ -119,12 +120,18 @@ def hdf5_to_dict(hdf5_file_path):
                     # Handle scalar string
                     if item.shape == ():
                         value = item[()]
-                        result[key] = value.decode('utf-8') if isinstance(value, bytes) else str(value)
+                        result[key] = (
+                            value.decode("utf-8")
+                            if isinstance(value, bytes)
+                            else str(value)
+                        )
                     # Handle array of strings
                     else:
                         value = item[:]
-                        result[key] = [v.decode('utf-8') if isinstance(v, bytes) else str(v) 
-                                     for v in value]
+                        result[key] = [
+                            v.decode("utf-8") if isinstance(v, bytes) else str(v)
+                            for v in value
+                        ]
                 else:
                     # Handle non-string scalar datasets
                     if item.shape == ():
@@ -133,27 +140,27 @@ def hdf5_to_dict(hdf5_file_path):
                     else:
                         result[key] = item[:]
                     # Convert numpy types to Python native types if possible
-                    if hasattr(result[key], 'tolist'):
+                    if hasattr(result[key], "tolist"):
                         result[key] = result[key].tolist()
         return result
-    
+
     # Open the HDF5 file and convert its contents
     try:
-        with h5py.File(hdf5_file_path, 'r') as f:
+        with h5py.File(hdf5_file_path, "r") as f:
             return _convert_group(f)
     except Exception as e:
         raise Exception(f"Error reading HDF5 file: {str(e)}")
-    
+
 
 def sync_dataframe_with_names(df, names_list, fill_value=0):
     """
     Synchronize a DataFrame's rows and columns with a list of names.
-    
+
     Parameters:
     - df (pd.DataFrame): Input DataFrame
     - names_list (list): List of strings to sync rows and columns with
     - fill_value (scalar, optional): Value to fill for new entries (default: 0)
-    
+
     Returns:
     - pd.DataFrame: Synchronized DataFrame
     """
@@ -161,22 +168,21 @@ def sync_dataframe_with_names(df, names_list, fill_value=0):
     names_set = set(names_list)
     current_cols = set(df.columns)
     current_idx = set(df.index)
-    
+
     # Create a new DataFrame with names_list as both index and columns
-    new_df = pd.DataFrame(fill_value, 
-                         index=names_list, 
-                         columns=names_list)
-    
+    new_df = pd.DataFrame(fill_value, index=names_list, columns=names_list)
+
     # Find common names between df and names_list for both rows and columns
     common_rows = current_idx & names_set
     common_cols = current_cols & names_set
-    
+
     # Copy data from the original DataFrame for overlapping rows and columns
     if common_rows and common_cols:
-        new_df.loc[list(common_rows), list(common_cols)] = df.loc[list(common_rows), list(common_cols)]
-    
+        new_df.loc[list(common_rows), list(common_cols)] = df.loc[
+            list(common_rows), list(common_cols)
+        ]
+
     # Ensure the order matches names_list for both rows and columns
     new_df = new_df.loc[names_list, names_list]
-    
-    return new_df
 
+    return new_df

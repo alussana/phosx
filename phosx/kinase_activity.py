@@ -9,7 +9,11 @@ import warnings
 
 from phosx.utils import read_pssms, read_pssm_score_quantiles, read_seqrnk
 from phosx.pssms import quantile_scaling, pssm_scoring, binarise_pssm_scores
-from phosx.pssm_enrichment import compute_ks_empirical_distrib, compute_ks_pvalues, compute_ks
+from phosx.pssm_enrichment import (
+    compute_ks_empirical_distrib,
+    compute_ks_pvalues,
+    compute_ks,
+)
 
 
 def compute_activity_score(results_df: pd.DataFrame, max_abs_score: float):
@@ -41,7 +45,7 @@ def compute_kinase_activities(
     seqrnk_file: str,
     pssm_h5_file: str,
     pssm_score_quantiles_h5_file: str,
-    n_perm: int = 1000,
+    n_perm: int = 10000,
     n_top_kinases: int = 5,
     min_n_hits: int = 4,
     min_quantile: float = 0.95,
@@ -82,15 +86,19 @@ def compute_kinase_activities(
     pssm_scoring_df.index = list(range(len(seq_series)))
 
     print(" Assigning kinases to targets : ", file=sys.stderr, end="")
+
     # quantile-scale the PSSM scores for each kinase
-    sorted_bg_scores_dict = {kinase: np.sort(pssm_bg_scores_df[kinase].values) for kinase in pssm_bg_scores_df.columns}
+    sorted_bg_scores_dict = {
+        kinase: np.sort(pssm_bg_scores_df[kinase].values)
+        for kinase in pssm_bg_scores_df.columns
+    }
     pssm_scoring_scaled01_df = pssm_scoring_df.apply(
         quantile_scaling,
         args=[sorted_bg_scores_dict],
         axis=0,
     )
 
-    # binarise PSSM scores - TODO only return binarised_pssm_scores, don't change pssm_scoring_scaled01_df
+    # binarise PSSM scores
     binarised_pssm_scores = binarise_pssm_scores(
         pssm_scoring_scaled01_df, n=n_top_kinases, m=min_quantile
     )
@@ -132,8 +140,20 @@ def compute_kinase_activities(
 
     # compute activity score for all kinases
     results_df = compute_activity_score(results_df, np.log10(n_perm))
-
     results_df["Activity Score"] = results_df["Activity Score"].round(decimals=4)
+
+    # add the kinases for which no inferece could be made to results_df
+    kinase_list = list(pssm_df_dict.keys())
+    missing_kinases = list(set(kinase_list) - set(results_df.index))
+    if len(missing_kinases) > 0:
+        default_values = [np.nan, np.nan, np.nan, 0]
+        columns = results_df.columns
+        new_rows = pd.DataFrame(
+            [default_values] * len(missing_kinases),
+            index=missing_kinases,
+            columns=columns,
+        )
+        results_df = pd.concat([results_df, new_rows])
 
     print("DONE", file=sys.stderr, end="\n\n")
 

@@ -17,8 +17,8 @@ def quantile_scaling(x: pd.Series, sorted_bg_scores_dict: dict):
     """
     sorted_bg_scores = sorted_bg_scores_dict[x.name]
     x_values = x.values
-    
-    num = np.searchsorted(sorted_bg_scores, x_values, side='right')
+
+    num = np.searchsorted(sorted_bg_scores, x_values, side="right")
     den = len(sorted_bg_scores)
     quantile_scores = num / den
 
@@ -52,25 +52,25 @@ def score_sequence(seq_str: str, pssm_df: pd.DataFrame):
 def max_score_sequence(seq_str: str, pssm_df: pd.DataFrame):
     """
     Compute the highest PSSM score among all possible substrings of length equal to pssm_df length.
-    
+
     Args:
         seq_str (str): Input sequence string of length >= len(pssm_df)
         pssm_df (pd.DataFrame): Position-specific scoring matrix DataFrame
-        
+
     Returns:
         float: Highest score among all possible substrings
     """
     pssm_length = len(pssm_df)
     if len(seq_str) < pssm_length:
         raise Exception("Sequence length cannot be shorter than pssm length")
-    max_score = float('-inf')
+    max_score = float("-inf")
 
     # Iterate through all possible substrings of length pssm_length
     for i in range(len(seq_str) - pssm_length + 1):
-        substring = seq_str[i:i + pssm_length]
-        p = score_sequence(substring, pssm_df)                    
+        substring = seq_str[i : i + pssm_length]
+        p = score_sequence(substring, pssm_df)
         max_score = max(max_score, p)
-        
+
     return max_score
 
 
@@ -109,16 +109,17 @@ def binarise_pssm_scores(scaled_scores: pd.DataFrame, n: int = 5, m: float = 0.9
     Returns:
         pandas.DataFrame: binarised kinase PSSM scores for the given phosphosites.
     """
+    scaled_scores = scaled_scores.copy()
 
     def find_bin_threshold(series: pd.Series):
-        
+
         sorted_values = sorted(series.values, reverse=True)
         threshold = sorted_values[n]
         if threshold < m:
             threshold = m
         series.loc[series > threshold] = 1
         series.loc[series <= threshold] = 0
-        
+
         return series
 
     binarised_scores = scaled_scores.apply(find_bin_threshold, axis=1)
