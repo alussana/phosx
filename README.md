@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.13.1`
+> Current version: `0.13.2`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -63,7 +63,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-  Version 0.13.1
+  Version 0.13.2
   Copyright (C) 2025 Alessandro Lussana
   Licence Apache 2.0
 
@@ -371,9 +371,9 @@ Let $e'$ be a vector where each element $e'_i$ is the reciprocal of $e_i$.
 
 Eventually, we want to modify $a_i$ (the activity of a kinase $i$) proportionally to:
 
-$$
+```math
 m_{ij} = 1 - \left\{ C_{ij} \cdot \left(1 - \frac{e_i}{e_j} \right) \cdot \exp\left[ -d \left( \frac{a_i}{a_j} \right)^2 \right] \right\}
-$$
+```
 
 for whatever kinase $j$ gives the minimum $m_{ij}$, and where $d \in \N$ is the decay factor. $d=64$ by default, and controls how fast $\exp [ -d ( a_i/a_j)^2 ]$ decays from 1 to 0 as $a_i / a_j$ becomes different from $1$.
 
@@ -391,13 +391,17 @@ We can then obtain $F = ee'^T$, the outer product of the evidence vector and its
 Let also be $B = aa'^T$, the outer product of the activity vector and its reciprocal, containing the ratio of inferred activities for each kinase pair; and $X = \exp ( -d B^2 )$, a matrix of values between $0$ and $1$ indicating how similar the inferred activity changes of any two kinases are. 
 
 We can then rewrite the equation for $m_{ij}$ more simply as:
-$$
+
+```math
 m_{ij} = 1 - \left\{ C_{ij} \cdot \left(1 - F_{ij} \right) \cdot X_{ij} \right\}
-$$
+```
+
 Therefore to find all possible $m_{ij}$ and then, for each $i$, select for the minimum, we first compute the matrix $M$:
-$$
+
+```math
 M = 1 - \left\{ C \circ \left(1 - F \right) \circ X \right\}
-$$
+```
+
 and then get $z$, the activity modifier vector indicating the modifier factor for each kinase, by taking the row-wise minimum of $M$.
 
 Lastly, we set $z_i=1$ for each kinase $i$ that doesn't have a regulatory A-loop. Only the differential activity of kinases that have an A-loop reported in the [metadata](#kinases-metadata) will be modified, as only their activities are assumed to depend on such a regulatory feature.
