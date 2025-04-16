@@ -7,7 +7,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.13.0`
+> Current version: `0.13.1`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -63,7 +63,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-  Version 0.13.0
+  Version 0.13.1
   Copyright (C) 2025 Alessandro Lussana
   Licence Apache 2.0
 
@@ -346,7 +346,7 @@ For each kinase, PhosX computes an empirical _p_ value of the $ES$ by generating
 The activity score (before correction based on the [upstream activation evidence](#upstream-activation-evidence)) for a given kinase $i$ is defined as:
 
 ```math
-a_i = -\log_{10}{(p_i)} \cdot \texttt{sign}(ES_i)
+a_i = -\log_{10}{\left(p_i\right)} \cdot \texttt{sign}\left(ES_i\right)
 ```
 
 where $\texttt{sign}$ is the sign function, and $p_i$ is the [_p_ value](#empirical-p-values) associated with kinase $i$, capped at the smallest computable _p_ value different from $0$, _i.e._ the inverse of the number of random permutations.
@@ -372,7 +372,7 @@ Let $e'$ be a vector where each element $e'_i$ is the reciprocal of $e_i$.
 Eventually, we want to modify $a_i$ (the activity of a kinase $i$) proportionally to:
 
 $$
-m_{ij} = 1 - \biggr\{ C_{ij} \cdot \biggl(1 - \frac{e_i}{e_j} \biggr) \cdot \exp \biggr[ -d \biggr( \frac{a_i}{a_j} \biggl)^2 \biggl] \biggr\}
+m_{ij} = 1 - \left\{ C_{ij} \cdot \left(1 - \frac{e_i}{e_j} \right) \cdot \exp\left[ -d \left( \frac{a_i}{a_j} \right)^2 \right] \right\}
 $$
 
 for whatever kinase $j$ gives the minimum $m_{ij}$, and where $d \in \N$ is the decay factor. $d=64$ by default, and controls how fast $\exp [ -d ( a_i/a_j)^2 ]$ decays from 1 to 0 as $a_i / a_j$ becomes different from $1$.
@@ -388,15 +388,15 @@ Before applying this formula, we need to consider some cases regarding the value
 
 We can then obtain $F = ee'^T$, the outer product of the evidence vector and its reciprocal, containing the ratio of upstream evidences for each kinase pair. To the elements of $F$ the conditional transformations above have been applied.
 
-Let also be $B = aa'^T$, the outer product of the activity vector and its reciprocal, containing the ratio of inferred activities for each kinase pair; and $X = \exp \biggr( -d B^2 \biggl)$, a matrix of values between $0$ and $1$ indicating how similar the inferred activity changes of any two kinases are. 
+Let also be $B = aa'^T$, the outer product of the activity vector and its reciprocal, containing the ratio of inferred activities for each kinase pair; and $X = \exp ( -d B^2 )$, a matrix of values between $0$ and $1$ indicating how similar the inferred activity changes of any two kinases are. 
 
 We can then rewrite the equation for $m_{ij}$ more simply as:
 $$
-m_{ij} = 1 - \biggr\{ C_{ij} \cdot \biggl(1 - F_{ij} \biggr) \cdot X_{ij} \biggr\}
+m_{ij} = 1 - \left\{ C_{ij} \cdot \left(1 - F_{ij} \right) \cdot X_{ij} \right\}
 $$
 Therefore to find all possible $m_{ij}$ and then, for each $i$, select for the minimum, we first compute the matrix $M$:
 $$
-M = 1 - \biggr\{ C \circ \biggl(1 - F \biggr) \circ X \biggr\}
+M = 1 - \left\{ C \circ \left(1 - F \right) \circ X \right\}
 $$
 and then get $z$, the activity modifier vector indicating the modifier factor for each kinase, by taking the row-wise minimum of $M$.
 
