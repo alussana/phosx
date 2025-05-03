@@ -292,7 +292,7 @@ def compute_activation_evidence(
     ]
 
     # Score A-loops sequences with each Ser/Thr PSSM
-    arg1 = [seq_series[i] for i in range(len(seq_series))]
+    arg1 = [seq_series.iloc[i] for i in range(len(seq_series))]
     arg2 = [s_t_pssm_df_dict for i in range(len(seq_series))]
     with Pool(processes=n_proc) as pool:
         dfs_list = pool.starmap(
@@ -322,7 +322,7 @@ def compute_activation_evidence(
     )
 
     # Score A-loops sequences with each Tyr PSSM
-    arg1 = [seq_series[i] for i in range(len(seq_series))]
+    arg1 = [seq_series.iloc[i] for i in range(len(seq_series))]
     arg2 = [y_pssm_df_dict for i in range(len(seq_series))]
     with Pool(processes=n_proc) as pool:
         dfs_list = pool.starmap(
@@ -383,7 +383,7 @@ def compute_activation_evidence(
         scores[i : i + n] for i in range(0, len(scores), n)
     ]  # Reshape the scores into a square matrix
     df = pd.DataFrame(score_matrix, index=kinase_list, columns=kinase_list)
-    df = df.round(3)
+    df = df.round(5)
     df[df < redundacy_threshold] = 0
     df[df != 0] = 1
     C = df.values
@@ -393,11 +393,11 @@ def compute_activation_evidence(
     e = np.max(E, axis=1)  # max upstream activation evidence
 
     # get B, the outer product of the activity vector and its reciprocal
-    B = np.outer(a, 1 / a).round(4)
+    B = np.outer(a, 1 / a).round(5)
 
     # get F, the outer product of the upstream activation evidence vector and its reciprocal
     with np.errstate(divide="ignore", invalid="ignore"):
-        F = np.outer(e, 1 / e).round(4)
+        F = np.outer(e, 1 / e).round(5)
     F[np.isinf(F)] = (
         1  # if competing kinase has no upstream activation evidence, we don't consider it
     )
@@ -410,10 +410,10 @@ def compute_activation_evidence(
 
     # get X, the decay matrix (decay factor for kinase pair i,j)
     v_decay_from_1 = np.vectorize(decay_from_1)
-    X = v_decay_from_1(B, decay_factor=decay_factor).round(4)
+    X = v_decay_from_1(B, decay_factor=decay_factor).round(5)
 
     # get M, the modifier matrix
-    M = (1 - ((C * X * (1 - F)))).round(4)
+    M = (1 - ((C * X * (1 - F)))).round(5)
     m = np.min(
         M, axis=1
     )  # choose modifiers for each kinase considering the strongest competing upstream activation evidence

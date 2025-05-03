@@ -1,13 +1,14 @@
 <p align="center">
-  <img width="190" src="https://i.imgur.com/OzGTvkt.png">
+  <img width="250" src="https://imgur.com/fg5x5HH.png">
   <br>
   Kinase activity inference from phosphosproteomics data based on substrate sequence specificity
   <br><br>
 </p>
 
+
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.13.2`
+> Current version: `0.13.3`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -63,7 +64,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-  Version 0.13.2
+  Version 0.13.3
   Copyright (C) 2025 Alessandro Lussana
   Licence Apache 2.0
 
@@ -288,15 +289,15 @@ PhosX's main output is a text file reporting the computed kinase activities with
 $ head kinase_activities.tmp
 
         KS      p value FDR q value     Activity Score
-AAK1    -0.2476131530554456     0.533   1.0     -0.2732727909734277
-ACVR1B  -0.36580307230946174    0.078   1.0     -1.1079053973095196
-ACVR2A  0.2259224236806207      0.439   1.0     0.35753547975787864
-ACVR2B  0.47014516632215597     0.019   1.0     1.7212463990471711
-ALK2    -0.25190558854944195    0.276   1.0     -0.5590909179347823
-ALPHAK3 -0.2875279855211264     0.358   1.0     -0.44611697335612566
-ALPK3   0.5759513630398431      0.041   1.0     1.3872161432802645
-AMPKA2  0.4401107718873606      0.299   1.0     0.5243288116755703
-ATM     -0.49337471491068263    0.096   1.0     -1.0177287669604316
+ACVR2A  0.23331 0.4193  1.0     0.37748
+ACVR2B  0.45501 0.0276  1.0     1.55909
+ALK2    0.25047 0.3705  1.0     0.43121
+ALK4    -0.35766        0.1447  1.0     -0.83953
+ALPHAK3 -0.2778 0.3899  1.0     -0.40905
+AMPKA2  0.44011 0.2997  1.0     0.52331
+ATM     -0.51674        0.0932  1.0     -1.03058
+ATR     -0.49195        0.1356  1.0     -0.86774
+AURA    0.64746 0.0886  1.0     1.05257
 ```
 
 Additionally, PhosX can also save plots of the weighted running sum and of the KS statistic compared to its empirical null distribution, similarly to the ones shown [above](#overview), for each kinase. To enable this behavior the option `--plot-figures` must be specified. A custom directory to save the plots can be passed with `-d`.
@@ -358,11 +359,11 @@ Kinases that are more closely evolutionarily related tend to have more similar P
 
 In doing so, PhosX first builds a directed network of kinases to represent the potential of each kinase to phosphorylate the activation loop (A-loop) of any other except itself. Edges are inferred based on the same [PSSM score](#phosphopeptide-scoring) logic used to link the phosphosites to the putative upstream kinases.
 
-If kinases have highly overalpping sets of assigned phosphosites in the experiment, and also a similar differential activity score, then their activity changes are considered to be potentially correlated mostly because of PSSM similarity. In order to prioritize a putative "true" regulated kinase between those candidates, we look for other kinases that target the A-loops of the candidates. The inferred differential activity of such upstream kinases is treated as evidence for the regulation of their downstream targets. If such evidence supports the activity of a specific kinase, then the activity change of the other candidates is dampened down, reducing the false positive rate of identifying differentially regulated kinases.
+If kinases have highly overlapping sets of assigned phosphosites in the experiment, and also a similar differential activity score, then their activity changes are considered to be potentially correlated mostly because of PSSM similarity. In order to prioritize a putative "true" regulated kinase between those candidates, we look for other kinases that target the A-loops of the candidates. The inferred differential activity of such upstream kinases is treated as evidence for the regulation of their downstream targets. If such evidence supports the activity of a specific kinase, then the activity change of the other candidates is dampened down, reducing the false positive rate of identifying differentially regulated kinases.
 
-The logic above is implemented in PhosX using the following procedure, which is applyed separately to kinases that are inferred to be upregulated ($a_i \gt 0$) or downregulated ($a_i \lt 0$). For the downregulated kinases we take the absolute value of their activity score and then negate the final modified score.
+The logic above is implemented in PhosX using the following procedure, which is applied separately to kinases that are inferred to be upregulated ($a_i > 0$) or downregulated ($a_i < 0$). For the downregulated kinases we take the absolute value of their activity score and then negate the final modified score.
 
-Let $a$ be the activity vector of the kinases. If we are considering upregulated kinases, each $a_i$ is the [Activity Score](#kinase-activity-score) of kinase $i$ if $a_i \gt 0$, otherwise we assign a "pseudo-null" activity, setting $a_i=0.01$. If we are considering downregulated kinases, we first take the opposite of the Activity Scores and then modify $a$ analogously. Let $a'$ be the vector where each element $a'_i$ is the reciprocal of $a_i$; $A$ the diagonal matrix of $a$; $D^T$ the transposed adjacency matrix of the directed kinase network, i.e. a Boolean matrix indicating for each kinase which other kinases may target its A-loop; $C$ the redundancy matrix, a Boolean matrix indicating for each kinase which other kinases have an extensive overlap of substrates and therefore a potentially correlated activity. By default $C_{ij}=1$ if the phosphosites assigned to kinases $i$ and $j$ in the experiment have a Jaccard Index $J \gt 0.5$.
+Let $a$ be the activity vector of the kinases. If we are considering upregulated kinases, each $a_i$ is the [Activity Score](#kinase-activity-score) of kinase $i$ if $a_i > 0$, otherwise we assign a "pseudo-null" activity, setting $a_i=0.01$. If we are considering downregulated kinases, we first take the opposite of the Activity Scores and then modify $a$ analogously. Let $a'$ be the vector where each element $a' _i$ is the reciprocal of $a_i$; $A$ the diagonal matrix of $a$; $D^T$ the transposed adjacency matrix of the directed kinase network, i.e. a Boolean matrix indicating for each kinase which other kinases may target its A-loop; $C$ the redundancy matrix, a Boolean matrix indicating for each kinase which other kinases have an extensive overlap of substrates and therefore a potentially correlated activity. By default $C_{ij}=1$ if the phosphosites assigned to kinases $i$ and $j$ in the experiment have a Jaccard Index $J > 0.5$.
 
 We compute $E = D^T \cdot A$, which is the activation evidence matrix, indicating for each kinase the activation coming from every other kinase.
 

@@ -58,7 +58,9 @@ def parse_phosx_args():
         "-meta",
         "--kinase-metadata",
         type=str,
-        default=str(path.join(path.dirname(__file__), "data/kinase_metadata.h5")),
+        default=str(
+            path.join(path.dirname(__file__), "data/kinase_metadata_annotated.h5")
+        ),
         help='Path to the h5 file storing kinase metadata ("aloop_seq"); defaults to built-in metadata',
     )
     parser.add_argument(
@@ -161,7 +163,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.13.2",
+        version="0.13.3",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -317,7 +319,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.13.2
+Version 0.13.3
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 

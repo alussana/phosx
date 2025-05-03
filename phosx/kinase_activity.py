@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
-import warnings
 
 from phosx.utils import read_pssms, read_pssm_score_quantiles, read_seqrnk
 from phosx.pssms import quantile_scaling, pssm_scoring, binarise_pssm_scores
@@ -18,7 +17,10 @@ from phosx.pssm_enrichment import (
 
 def compute_activity_score(results_df: pd.DataFrame, max_abs_score: float):
     # compute FDR
-    results_df["FDR q value"] = results_df["p value"] * len(results_df)
+    results_df["FDR q value"] = (results_df["p value"] * len(results_df)).round(
+        decimals=5
+    )
+    # cap FDR q value at 1
     results_df.loc[results_df["FDR q value"] > 1, "FDR q value"] = 1
 
     # compute activity score as -log10(FDR), signed with the sign of KS
@@ -55,7 +57,6 @@ def compute_kinase_activities(
     ser_thr_only=False,
     tyr_only=False,
 ):
-    warnings.simplefilter(action="ignore", category=FutureWarning)
 
     print("     Loading input objects    : ", file=sys.stderr, end="")
     pssm_df_dict = read_pssms(pssm_h5_file)
@@ -123,7 +124,7 @@ def compute_kinase_activities(
         binarised_pssm_scores=binarised_pssm_scores,
         plot_bool=plot_figures,
         out_plot_dir_str=out_plot_dir,
-    )
+    ).round(decimals=5)
     ks_series.name = "KS"
 
     # compute ks p values for all kinases
@@ -133,14 +134,14 @@ def compute_kinase_activities(
         ks_series=ks_series,
         plot_bool=plot_figures,
         out_plot_dir_str=out_plot_dir,
-    )
+    ).round(decimals=5)
 
     # output table
     results_df = pd.concat([ks_series, ks_pvalue_series], axis=1)
 
     # compute activity score for all kinases
     results_df = compute_activity_score(results_df, np.log10(n_perm))
-    results_df["Activity Score"] = results_df["Activity Score"].round(decimals=4)
+    results_df["Activity Score"] = results_df["Activity Score"].round(decimals=5)
 
     # add the kinases for which no inferece could be made to results_df
     kinase_list = list(pssm_df_dict.keys())

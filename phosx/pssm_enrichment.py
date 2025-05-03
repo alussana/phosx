@@ -74,7 +74,7 @@ def compute_ks(
     # make table of running sum deltas for each kinase
     running_sum_deltas_df = P_hit_df.copy()
     for kinase in running_sum_deltas_df.columns:
-        running_sum_deltas_df[kinase].loc[running_sum_deltas_df[kinase] == 0] = (
+        running_sum_deltas_df.loc[running_sum_deltas_df[kinase] == 0, kinase] = (
             P_miss_series[kinase]
         )
 
