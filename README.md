@@ -8,7 +8,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.13.3`
+> Current version: `0.13.4`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -20,11 +20,11 @@
 
 <p align="center">
 <br>
-  <img width="900" src="https://i.imgur.com/6DdMDom.png">
+  <img width="900" src="https://i.imgur.com/3FBR2Fo.png">
   <br>
 </p>
 
-PhosX infers differential kinase activities from phosphoproteomics data without requiring any prior knowledge database of kinase-phosphosite associations. PhosX assigns the detected phosphopeptides to potential upstream kinases based on experimentally determined substrate sequence specificities, and it tests the enrichment of a kinase's potential substrates in the extremes of a ranked list of phosphopeptides using a Kolmogorov-Smirnov-like statistic. A _p_ value for this statistic is extracted empirically by random permutations of the phosphosite ranks. By considering the A-loop sequence of kinase domains, PhosX refines the inferred kinase activity changes by computing the [_upstream activation evidence_](#upstream-activation-evidence) (`TODO: add panel in the figure`), further improving accuracy.
+PhosX infers differential kinase activities from phosphoproteomics data without requiring any prior knowledge database of kinase-phosphosite associations. PhosX assigns the detected phosphopeptides to potential upstream kinases based on experimentally determined substrate sequence specificities, and it tests the enrichment of a kinase's potential substrates in the extremes of a ranked list of phosphopeptides using a Kolmogorov-Smirnov-like statistic. A _p_ value for this statistic is extracted empirically by random permutations of the phosphosite ranks. By considering the A-loop sequence of kinase domains, PhosX refines the inferred kinase activity changes by computing the [_upstream activation evidence_](#upstream-activation-evidence), further improving accuracy.
 
 In the [benchmark](https://github.com/alussana/phosx-benchmark) PhosX consistently outperformed popular alternative methods, including KSTAR, KSEA, Z-score, Kinex, and PTM-SEA, in identifying expected regulated kinases in over a hundred phosphoproteomics perturbation experiments. The performance gain was expecially remarkable in identifying upregulated kinases, potentially making PhosX an ideal tool to discover therapeutic targets for kinase inhibitors. All evaluated methods except Kinex and PhosX are based on prior knowledge of kinase-substrate associations.
 
@@ -64,7 +64,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
   ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
   ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-  Version 0.13.3
+  Version 0.13.4
   Copyright (C) 2025 Alessandro Lussana
   Licence Apache 2.0
 
