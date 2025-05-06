@@ -39,6 +39,20 @@ class KinaseNetwork:
         # Update the name-to-id mapping
         self.name_to_id[name] = node_id
 
+    def add_activity_scores(self, score_dict):
+        """Update activity scores for nodes based on a dictionary of name->score mappings
+
+        Args:
+            score_dict (dict): Dictionary mapping node names to new activity scores
+        """
+        for name, new_score in score_dict.items():
+            # Find the node_id based on the name
+            node_id = self.name_to_id.get(name)
+
+            # If the node exists, update its activity score
+            if node_id is not None:
+                self.nodes[node_id]["activity_score"] = new_score
+
     def add_edge(self, source_id, target_id, complementarity):
         """Add a directed edge between two nodes with complementarity score"""
         if source_id in self.nodes and target_id in self.nodes:
@@ -86,6 +100,45 @@ class KinaseNetwork:
         """Remove a specific edge"""
         if (source_id, target_id) in self.edges:
             del self.edges[(source_id, target_id)]
+
+    def get_edges_dict(self):
+        """Return a dictionary with lists of edge data where sources and targets
+        are represented by their names rather than IDs.
+
+        Returns:
+            dict: Dictionary containing the following lists:
+                - source: names of source nodes
+                - target: names of target nodes
+                - complementarity: edge complementarity scores
+                - source_activity_score: activity scores of source nodes
+                - target_activity_score: activity scores of target nodes
+        """
+        result = {
+            "source": [],
+            "target": [],
+            "complementarity": [],
+            "source_activity_score": [],
+            "target_activity_score": [],
+        }
+
+        # Iterate through all edges in the network
+        for (source_id, target_id), complementarity in self.edges.items():
+            # Get the node attributes
+            source_node = self.nodes.get(source_id)
+            target_node = self.nodes.get(target_id)
+
+            # Skip this edge if either node doesn't exist
+            if not source_node or not target_node:
+                continue
+
+            # Add the data to the result dictionary
+            result["source"].append(source_node["name"])
+            result["target"].append(target_node["name"])
+            result["complementarity"].append(complementarity)
+            result["source_activity_score"].append(source_node["activity_score"])
+            result["target_activity_score"].append(target_node["activity_score"])
+
+        return result
 
 
 def compute_complementarity(k1: str, k2: str, assigned_substrates: pd.DataFrame):
@@ -429,6 +482,9 @@ def compute_activation_evidence(
     if upregulation == False:
         z_series = -z_series
 
+    # add the activity scores to the network
+    network.add_activity_scores(z_series.to_dict())
+
     print("DONE", file=sys.stderr)
 
-    return z_series
+    return z_series, network

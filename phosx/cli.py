@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from os import path
+from os import path, makedirs
 import sys
 import pandas as pd
 from phosx.kinase_activity import compute_kinase_activities
@@ -153,6 +153,13 @@ def parse_phosx_args():
         help="Output files directory; only relevant if used with --plot_figures; defaults to 'phosx_output/'",
     )
     parser.add_argument(
+        "-nd",
+        "--networks-dir",
+        type=str,
+        default=None,
+        help="Output directory for the inferred Kinase-->A-loop networks; if not specified, the networks will not be saved",
+    )
+    parser.add_argument(
         "-o",
         "--output-path",
         type=str,
@@ -163,7 +170,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.13.4",
+        version="0.14.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -201,6 +208,7 @@ def phosx(
     n_proc: int = 1,
     plot_figures: bool = False,
     out_plot_dir: str = "phosx_output",
+    networks_dir=None,
     out_path=None,
 ):
     print("> Computing differential activity of Ser/Thr kinases...", file=sys.stderr)
@@ -247,7 +255,7 @@ def phosx(
             file=sys.stderr,
         )
 
-        upreg_activation_series = compute_activation_evidence(
+        upreg_activation_series, upreg_net = compute_activation_evidence(
             activity_df,
             s_t_assigned_substrates_df,
             y_assigned_substrates_df,
@@ -272,7 +280,7 @@ def phosx(
             file=sys.stderr,
         )
 
-        downreg_activation_series = compute_activation_evidence(
+        downreg_activation_series, downreg_net = compute_activation_evidence(
             activity_df,
             s_t_assigned_substrates_df,
             y_assigned_substrates_df,
@@ -292,7 +300,9 @@ def phosx(
             out_path,
         )
 
-        # activity_df = activity_df.rename(columns={"Activity Score": "Legacy Activity Score"})
+        activity_df = activity_df.rename(
+            columns={"Activity Score": "Legacy Activity Score"}
+        )
         activity_df.loc[upreg_activation_series.index, "Activity Score"] = (
             upreg_activation_series
         )
@@ -305,6 +315,34 @@ def phosx(
         print(activity_df.to_csv(sep="\t", na_rep="NA", header=True, index=True))
     else:
         activity_df.to_csv(out_path, na_rep="NA", sep="\t", header=True, index=True)
+
+    if networks_dir is not None:
+        if not path.exists(networks_dir):
+            makedirs(networks_dir)
+        downreg_net_df = pd.DataFrame.from_dict(upreg_net.get_edges_dict(), orient="columns")
+        downreg_net_df = downreg_net_df.loc[
+            (downreg_net_df["source_activity_score"] < 0.0) &
+            (downreg_net_df["target_activity_score"] < 0.0)
+        ]
+        downreg_net_df.to_csv(
+            path.join(networks_dir, "downreg_aloop_net.tsv"),
+            sep="\t",
+            na_rep="NA",
+            header=True,
+            index=False,
+        )
+        upreg_net_df = pd.DataFrame.from_dict(downreg_net.get_edges_dict(), orient="columns")
+        upreg_net_df = upreg_net_df.loc[
+            (upreg_net_df["source_activity_score"] > 0.0) &
+            (upreg_net_df["target_activity_score"] > 0.0)
+        ]
+        upreg_net_df.to_csv(
+            path.join(networks_dir, "upreg_aloop_net.tsv"),
+            sep="\t",
+            na_rep="NA",
+            header=True,
+            index=False,
+        )
 
     return activity_df
 
@@ -319,7 +357,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.13.4
+Version 0.14.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
@@ -351,6 +389,7 @@ Command: {' '.join(sys.argv)}
         args.n_proc,
         args.plot_figures,
         args.output_dir,
+        args.networks_dir,
         args.output_path,
     )
 

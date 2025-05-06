@@ -8,7 +8,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.13.4`
+> Current version: `0.14.0`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -58,68 +58,71 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
 
   ```bash
   ██████╗░██╗░░██╗░█████╗░░██████╗██╗░░██╗
-  ██╔══██╗██║░░██║██╔══██╗██╔════╝╚██╗██╔╝
-  ██████╔╝███████║██║░░██║╚█████╗░░╚███╔╝░
-  ██╔═══╝░██╔══██║██║░░██║░╚═══██╗░██╔██╗░
-  ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
-  ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
+██╔══██╗██║░░██║██╔══██╗██╔════╝╚██╗██╔╝
+██████╔╝███████║██║░░██║╚█████╗░░╚███╔╝░
+██╔═══╝░██╔══██║██║░░██║░╚═══██╗░██╔██╗░
+██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
+╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-  Version 0.13.4
-  Copyright (C) 2025 Alessandro Lussana
-  Licence Apache 2.0
+Version 0.14.0
+Copyright (C) 2025 Alessandro Lussana
+Licence Apache 2.0
 
-  Command: /home/alussana/Xiv_local/venvs/phosx/bin/phosx -h
-  usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-no-uae] [-meta KINASE_METADATA] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-astqth A_LOOP_S_T_QUANTILE_THRESHOLD] [-ayqth A_LOOP_Y_QUANTILE_THRESHOLD] [-urt UPREG_REDUNDANCY_THRESHOLD] [-drt DOWNREG_REDUNDANCY_THRESHOLD] [-mh MIN_N_HITS] [-mp MIN_QUANTILE]
-               [-df1 DECAY_FACTOR] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-o OUTPUT_PATH] [-v]
-               seqrnk
+Command: /home/alussana/Xiv_local/venvs/phosx/bin/phosx -h
 
-  Data-driven differential kinase activity inference from phosphosproteomics data
+usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-no-uae] [-meta KINASE_METADATA] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-astqth A_LOOP_S_T_QUANTILE_THRESHOLD] [-ayqth A_LOOP_Y_QUANTILE_THRESHOLD] [-urt UPREG_REDUNDANCY_THRESHOLD] [-drt DOWNREG_REDUNDANCY_THRESHOLD] [-mh MIN_N_HITS] [-mp MIN_QUANTILE]
+             [-df1 DECAY_FACTOR] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-nd NETWORKS_DIR] [-o OUTPUT_PATH] [-v]
+             seqrnk
 
-  positional arguments:
-    seqrnk                Path to the seqrnk file.
+Data-driven differential kinase activity inference from phosphosproteomics data
 
-  options:
-    -h, --help            show this help message and exit
-    -yp Y_PSSM, --y-pssm Y_PSSM
-                          Path to the h5 file storing custom Tyr PSSMs; defaults to built-in PSSMs
-    -stp S_T_PSSM, --s-t-pssm S_T_PSSM
-                          Path to the h5 file storing custom Ser/Thr PSSMs; defaults to built-in PSSMs
-    -yq Y_PSSM_QUANTILES, --y-pssm-quantiles Y_PSSM_QUANTILES
-                          Path to the h5 file storing custom Tyr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
-    -stq S_T_PSSM_QUANTILES, --s-t-pssm-quantiles S_T_PSSM_QUANTILES
-                          Path to the h5 file storing custom Ser/Thr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
-    -no-uae, --no-upstream-activation-evidence
-                          Do not compute upstream activation evidence to modify the activity scores of kinases with correlated activity; default: False
-    -meta KINASE_METADATA, --kinase-metadata KINASE_METADATA
-                          Path to the h5 file storing kinase metadata ("aloop_seq"); defaults to built-in metadata
-    -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
-                          Number of random permutations; default: 10000
-    -stk S_T_N_TOP_KINASES, --s-t-n-top-kinases S_T_N_TOP_KINASES
-                          Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5
-    -yk Y_N_TOP_KINASES, --y-n-top-kinases Y_N_TOP_KINASES
-                          Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5
-    -astqth A_LOOP_S_T_QUANTILE_THRESHOLD, --a-loop-s-t-quantile-threshold A_LOOP_S_T_QUANTILE_THRESHOLD
-                          Minimum Ser/Thr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95
-    -ayqth A_LOOP_Y_QUANTILE_THRESHOLD, --a-loop-y-quantile-threshold A_LOOP_Y_QUANTILE_THRESHOLD
-                          Minimum Tyr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95
-    -urt UPREG_REDUNDANCY_THRESHOLD, --upreg-redundancy-threshold UPREG_REDUNDANCY_THRESHOLD
-                          Minimum Jaccard index of target substrates to consider two upregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5
-    -drt DOWNREG_REDUNDANCY_THRESHOLD, --downreg-redundancy-threshold DOWNREG_REDUNDANCY_THRESHOLD
-                          Minimum Jaccard index of target substrates to consider two downregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5
-    -mh MIN_N_HITS, --min-n-hits MIN_N_HITS
-                          Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4
-    -mp MIN_QUANTILE, --min-quantile MIN_QUANTILE
-                          Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95
-    -df1 DECAY_FACTOR, --decay-factor DECAY_FACTOR
-                          Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 64
-    -c N_PROC, --n-proc N_PROC
-                          Number of cores used for multithreading; default: 1
-    --plot-figures        Save figures in pdf format; see also --output_dir
-    -d OUTPUT_DIR, --output-dir OUTPUT_DIR
-                          Output files directory; only relevant if used with --plot_figures; defaults to 'phosx_output/'
-    -o OUTPUT_PATH, --output-path OUTPUT_PATH
-                          Main output table; if not specified it will be printed in STDOUT
-    -v, --version         Print package version and exit
+positional arguments:
+  seqrnk                Path to the seqrnk file.
+
+options:
+  -h, --help            show this help message and exit
+  -yp Y_PSSM, --y-pssm Y_PSSM
+                        Path to the h5 file storing custom Tyr PSSMs; defaults to built-in PSSMs
+  -stp S_T_PSSM, --s-t-pssm S_T_PSSM
+                        Path to the h5 file storing custom Ser/Thr PSSMs; defaults to built-in PSSMs
+  -yq Y_PSSM_QUANTILES, --y-pssm-quantiles Y_PSSM_QUANTILES
+                        Path to the h5 file storing custom Tyr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
+  -stq S_T_PSSM_QUANTILES, --s-t-pssm-quantiles S_T_PSSM_QUANTILES
+                        Path to the h5 file storing custom Ser/Thr kinases PSSM score quantile distributions under the key 'pssm_scores'; defaults to built-in PSSM scores quantiles
+  -no-uae, --no-upstream-activation-evidence
+                        Do not compute upstream activation evidence to modify the activity scores of kinases with correlated activity; default: False
+  -meta KINASE_METADATA, --kinase-metadata KINASE_METADATA
+                        Path to the h5 file storing kinase metadata ("aloop_seq"); defaults to built-in metadata
+  -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
+                        Number of random permutations; default: 10000
+  -stk S_T_N_TOP_KINASES, --s-t-n-top-kinases S_T_N_TOP_KINASES
+                        Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5
+  -yk Y_N_TOP_KINASES, --y-n-top-kinases Y_N_TOP_KINASES
+                        Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5
+  -astqth A_LOOP_S_T_QUANTILE_THRESHOLD, --a-loop-s-t-quantile-threshold A_LOOP_S_T_QUANTILE_THRESHOLD
+                        Minimum Ser/Thr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95
+  -ayqth A_LOOP_Y_QUANTILE_THRESHOLD, --a-loop-y-quantile-threshold A_LOOP_Y_QUANTILE_THRESHOLD
+                        Minimum Tyr PSSM score quantile for an activation loop to be considered potential substrate of a kinase; default: 0.95
+  -urt UPREG_REDUNDANCY_THRESHOLD, --upreg-redundancy-threshold UPREG_REDUNDANCY_THRESHOLD
+                        Minimum Jaccard index of target substrates to consider two upregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5
+  -drt DOWNREG_REDUNDANCY_THRESHOLD, --downreg-redundancy-threshold DOWNREG_REDUNDANCY_THRESHOLD
+                        Minimum Jaccard index of target substrates to consider two downregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5
+  -mh MIN_N_HITS, --min-n-hits MIN_N_HITS
+                        Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4
+  -mp MIN_QUANTILE, --min-quantile MIN_QUANTILE
+                        Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95
+  -df1 DECAY_FACTOR, --decay-factor DECAY_FACTOR
+                        Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 64
+  -c N_PROC, --n-proc N_PROC
+                        Number of cores used for multithreading; default: 1
+  --plot-figures        Save figures in pdf format; see also --output_dir
+  -d OUTPUT_DIR, --output-dir OUTPUT_DIR
+                        Output files directory; only relevant if used with --plot_figures; defaults to 'phosx_output/'
+  -nd NETWORKS_DIR, --networks-dir NETWORKS_DIR
+                        Output directory for the inferred Kinase-->A-loop networks; if not specified, the networks will not be saved
+  -o OUTPUT_PATH, --output-path OUTPUT_PATH
+                        Main output table; if not specified it will be printed in STDOUT
+  -v, --version         Print package version and exit
   ```
 </details>
 
@@ -283,24 +286,53 @@ It is possible to pass custom A-loop sequences by specifying a suitable `.h5` me
 
 ## Output
 
+### Differential kinase activity score
+
 PhosX's main output is a text file reporting the computed kinase activities with associated statistics as described in the [Method](#method) section. For each kinase, the KS	statistics, the _p_ value, the FDR _q_ value, and the	Activity Score are reported. Kinases for which a differential activity could not be computed due to a low number of assigned phosphosites (see option `-mh MIN_HITS`) are reported as having an Activity Score of $0$ and `NA` values in the other columns. See an output example from the command executed [above](#usage):
 
-```bash
-$ head kinase_activities.tmp
+<details>
+  <summary>head kinase_activities.tmp</summary>
+  ```bash
+          KS      p value FDR q value     Activity Score
+  ACVR2A  0.23331 0.4193  1.0     0.37748
+  ACVR2B  0.45501 0.0276  1.0     1.55909
+  ALK2    0.25047 0.3705  1.0     0.43121
+  ALK4    -0.35766        0.1447  1.0     -0.83953
+  ALPHAK3 -0.2778 0.3899  1.0     -0.40905
+  AMPKA2  0.44011 0.2997  1.0     0.52331
+  ATM     -0.51674        0.0932  1.0     -1.03058
+  ATR     -0.49195        0.1356  1.0     -0.86774
+  AURA    0.64746 0.0886  1.0     1.05257
+  ```
+</details>
 
-        KS      p value FDR q value     Activity Score
-ACVR2A  0.23331 0.4193  1.0     0.37748
-ACVR2B  0.45501 0.0276  1.0     1.55909
-ALK2    0.25047 0.3705  1.0     0.43121
-ALK4    -0.35766        0.1447  1.0     -0.83953
-ALPHAK3 -0.2778 0.3899  1.0     -0.40905
-AMPKA2  0.44011 0.2997  1.0     0.52331
-ATM     -0.51674        0.0932  1.0     -1.03058
-ATR     -0.49195        0.1356  1.0     -0.86774
-AURA    0.64746 0.0886  1.0     1.05257
-```
+### Statistics plots
 
 Additionally, PhosX can also save plots of the weighted running sum and of the KS statistic compared to its empirical null distribution, similarly to the ones shown [above](#overview), for each kinase. To enable this behavior the option `--plot-figures` must be specified. A custom directory to save the plots can be passed with `-d`.
+
+### Kinase $\rightarrow$ A-loop network
+
+A kinase-kinase network, where directed edges represent the potential of a source node to phosphorylate the A-loop of a target node, is inferred as part of evauating the [upstream activation evidence](#upstream-activation-evidence). After a PhosX run, such networks, for upregulated and downregulated kinases respectively, can be saved on disk by specifying the output directory path with the commad line argument `-nd, --networks-dir`. See an output example generated by running:
+
+```bash
+phosx -c 4 -nd aloop_networks tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activities.tmp`
+```
+
+<details>
+  <summary>head aloop_networks/upreg_aloop_net.tsv</summary>
+  ```bash
+  source  target  complementarity source_activity_score   target_activity_score
+  ACVR2A  LATS1   1.0     0.36866 0.55393
+  ACVR2A  LATS2   1.0     0.36866 0.63884
+  ACVR2A  NLK     1.0     0.36866 1.81816
+  ACVR2A  PINK1   1.0     0.36866 0.59108
+  ACVR2A  EPHB1   1.0     0.36866 0.12925
+  ACVR2A  EPHB4   1.0     0.36866 0.30856
+  ACVR2A  ZAP70   0.98    0.36866 0.36512
+  ACVR2B  LATS1   1.0     1.61618 0.55393
+  ACVR2B  LATS2   1.0     1.61618 0.63884
+  ```
+</details>
 
 # Method
 
@@ -357,7 +389,7 @@ Activity scores greater than $0$ denote kinase activation, while the opposite co
 
 Kinases that are more closely evolutionarily related tend to have more similar PSSMs, leading to a correlation in their inferred differential activities which might not be biologically real. PhosX attempts to find these instances in any given experiment and discriminate the truly differentially active kinases from the ones whose activity is falsely correlated with them. 
 
-In doing so, PhosX first builds a directed network of kinases to represent the potential of each kinase to phosphorylate the activation loop (A-loop) of any other except itself. Edges are inferred based on the same [PSSM score](#phosphopeptide-scoring) logic used to link the phosphosites to the putative upstream kinases.
+In doing so, PhosX first builds a [directed network of kinases](#kinase--a-loop-network) to represent the potential of each kinase to phosphorylate the activation loop (A-loop) of any other except itself. Edges are inferred based on the same [PSSM score](#phosphopeptide-scoring) logic used to link the phosphosites to the putative upstream kinases, except that the maximum score is taken by sliding a PSSM over each possible position along an A-loop.
 
 If kinases have highly overlapping sets of assigned phosphosites in the experiment, and also a similar differential activity score, then their activity changes are considered to be potentially correlated mostly because of PSSM similarity. In order to prioritize a putative "true" regulated kinase between those candidates, we look for other kinases that target the A-loops of the candidates. The inferred differential activity of such upstream kinases is treated as evidence for the regulation of their downstream targets. If such evidence supports the activity of a specific kinase, then the activity change of the other candidates is dampened down, reducing the false positive rate of identifying differentially regulated kinases.
 
