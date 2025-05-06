@@ -154,23 +154,23 @@ def parse_phosx_args():
     )
     parser.add_argument(
         "-nd",
-        "--networks-dir",
+        "--network-path",
         type=str,
         default=None,
-        help="Output directory for the inferred Kinase-->A-loop networks; if not specified, the networks will not be saved",
+        help="Output file path for the inferred Kinase-->A-loop network; if not specified, the network will not be saved",
     )
     parser.add_argument(
         "-o",
         "--output-path",
         type=str,
         default=None,
-        help="Main output table; if not specified it will be printed in STDOUT",
+        help="Main output table with differential kinase activitiy scores; if not specified it will be printed in STDOUT",
     )
     parser.add_argument(
         "-v",
         "--version",
         action="version",
-        version="0.14.1",
+        version="0.15.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -208,7 +208,7 @@ def phosx(
     n_proc: int = 1,
     plot_figures: bool = False,
     out_plot_dir: str = "phosx_output",
-    networks_dir=None,
+    network_path=None,
     out_path=None,
 ):
     print("> Computing differential activity of Ser/Thr kinases...", file=sys.stderr)
@@ -255,7 +255,7 @@ def phosx(
             file=sys.stderr,
         )
 
-        upreg_activation_series, upreg_net = compute_activation_evidence(
+        upreg_activation_series, network = compute_activation_evidence(
             activity_df,
             s_t_assigned_substrates_df,
             y_assigned_substrates_df,
@@ -280,7 +280,7 @@ def phosx(
             file=sys.stderr,
         )
 
-        downreg_activation_series, downreg_net = compute_activation_evidence(
+        downreg_activation_series, network = compute_activation_evidence(
             activity_df,
             s_t_assigned_substrates_df,
             y_assigned_substrates_df,
@@ -310,34 +310,19 @@ def phosx(
             downreg_activation_series
         )
 
+    # add the activity scores to the network
+    network.add_activity_scores(activity_df["Activity Score"].to_dict())
+
     # export results
     if out_path == None:
         print(activity_df.to_csv(sep="\t", na_rep="NA", header=True, index=True))
     else:
         activity_df.to_csv(out_path, na_rep="NA", sep="\t", header=True, index=True)
 
-    if networks_dir is not None:
-        if not path.exists(networks_dir):
-            makedirs(networks_dir)
-        downreg_net_df = pd.DataFrame.from_dict(upreg_net.get_edges_dict(), orient="columns")
-        downreg_net_df = downreg_net_df.loc[
-            (downreg_net_df["source_activity_score"] < 0.0) &
-            (downreg_net_df["target_activity_score"] < 0.0)
-        ]
-        downreg_net_df.to_csv(
-            path.join(networks_dir, "downreg_aloop_net.tsv"),
-            sep="\t",
-            na_rep="NA",
-            header=True,
-            index=False,
-        )
-        upreg_net_df = pd.DataFrame.from_dict(downreg_net.get_edges_dict(), orient="columns")
-        upreg_net_df = upreg_net_df.loc[
-            (upreg_net_df["source_activity_score"] > 0.0) &
-            (upreg_net_df["target_activity_score"] > 0.0)
-        ]
-        upreg_net_df.to_csv(
-            path.join(networks_dir, "upreg_aloop_net.tsv"),
+    if network_path is not None:
+        network_df = pd.DataFrame.from_dict(network.get_edges_dict(), orient="columns")
+        network_df.to_csv(
+            f"{network_path}",
             sep="\t",
             na_rep="NA",
             header=True,
@@ -357,7 +342,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.14.1
+Version 0.15.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
@@ -389,7 +374,7 @@ Command: {' '.join(sys.argv)}
         args.n_proc,
         args.plot_figures,
         args.output_dir,
-        args.networks_dir,
+        args.network_path,
         args.output_path,
     )
 

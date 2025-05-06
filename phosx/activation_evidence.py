@@ -482,9 +482,6 @@ def compute_activation_evidence(
     if upregulation == False:
         z_series = -z_series
 
-    # add the activity scores to the network
-    network.add_activity_scores(z_series.to_dict())
-
     print("DONE", file=sys.stderr)
 
     return z_series, network
