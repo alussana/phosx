@@ -8,7 +8,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.14.0`
+> Current version: `0.14.1`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -64,7 +64,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.14.0
+Version 0.14.1
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
@@ -292,6 +292,7 @@ PhosX's main output is a text file reporting the computed kinase activities with
 
 <details>
   <summary>head kinase_activities.tmp</summary>
+
   ```bash
           KS      p value FDR q value     Activity Score
   ACVR2A  0.23331 0.4193  1.0     0.37748
@@ -320,6 +321,7 @@ phosx -c 4 -nd aloop_networks tests/seqrnk/koksal2018_log2.fold.change.8min.seqr
 
 <details>
   <summary>head aloop_networks/upreg_aloop_net.tsv</summary>
+  
   ```bash
   source  target  complementarity source_activity_score   target_activity_score
   ACVR2A  LATS1   1.0     0.36866 0.55393
