@@ -177,7 +177,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.16.0",
+        version="0.17.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -318,27 +318,27 @@ def phosx(
             downreg_activation_series
         )
 
-    # add the activity scores to the network
-    network.add_activity_scores(activity_df["Activity Score"].to_dict())
+        if network_path is not None:
+            # add the activity scores to the network
+            network.add_activity_scores(activity_df["Activity Score"].to_dict())
+
+            network_df = pd.DataFrame.from_dict(network.get_edges_dict(), orient="columns")
+            network_df["complementarity"] = network_df["complementarity"].round(
+                decimals=2
+            )
+            network_df.to_csv(
+                f"{network_path}",
+                sep="\t",
+                na_rep="NA",
+                header=True,
+                index=False,
+            )
 
     # export results
     if out_path == None:
         print(activity_df.to_csv(sep="\t", na_rep="NA", header=True, index=True))
     else:
         activity_df.to_csv(out_path, na_rep="NA", sep="\t", header=True, index=True)
-
-    if network_path is not None:
-        network_df = pd.DataFrame.from_dict(network.get_edges_dict(), orient="columns")
-        network_df["complementarity"] = network_df["complementarity"].round(
-            decimals=2
-        )
-        network_df.to_csv(
-            f"{network_path}",
-            sep="\t",
-            na_rep="NA",
-            header=True,
-            index=False,
-        )
 
     return activity_df
 
@@ -353,7 +353,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.16.0
+Version 0.17.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
