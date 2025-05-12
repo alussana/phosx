@@ -75,13 +75,13 @@ def parse_phosx_args():
         "--s-t-n-top-kinases",
         type=int,
         default=5,
-        help="Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5",
+        help="Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 10",
     )
     parser.add_argument(
         "-yk",
         "--y-n-top-kinases",
         type=int,
-        default=5,
+        default=10,
         help="Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5",
     )
     parser.add_argument(
@@ -120,11 +120,18 @@ def parse_phosx_args():
         help="Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4",
     )
     parser.add_argument(
-        "-mp",
-        "--min-quantile",
+        "-stmq",
+        "--s-t-min-quantile",
         type=float,
         default=0.95,
-        help="Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95",
+        help="Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a Ser/Thr kinase; default: 0.95",
+    )
+    parser.add_argument(
+        "-ymq",
+        "--y-min-quantile",
+        type=float,
+        default=0.90,
+        help="Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a Tyr kinase; default: 0.90",
     )
     parser.add_argument(
         "-df1",
@@ -170,7 +177,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.15.0",
+        version="0.16.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -195,13 +202,14 @@ def phosx(
     s_t_n_top_kinases: int = 5,
     y_n_top_kinases: int = 10,
     min_n_hits: int = 4,
-    min_quantile: float = 0.95,
+    s_t_min_quantile: float = 0.95,
+    y_min_quantile: float = 0.90,
     no_upstream_activation_evidence: bool = False,
     metadata_h5_file: str = str(
         path.join(path.dirname(__file__), "../phosx/data/kinase_metadata.h5")
     ),
     a_loop_s_t_quantile_threshold: int = 0.95,
-    a_loop_y_quantile_threshold: int = 0.95,
+    a_loop_y_quantile_threshold: int = 0.90,
     upreg_redundancy_threshold: float = 0.5,
     downreg_redundancy_threshold: float = 0.5,
     decay_factor: float = 64,
@@ -221,7 +229,7 @@ def phosx(
         n_perm,
         s_t_n_top_kinases,
         min_n_hits,
-        min_quantile,
+        s_t_min_quantile,
         n_proc,
         plot_figures,
         out_plot_dir,
@@ -239,7 +247,7 @@ def phosx(
         n_perm,
         y_n_top_kinases,
         min_n_hits,
-        min_quantile,
+        y_min_quantile,
         n_proc,
         plot_figures,
         out_plot_dir,
@@ -321,6 +329,9 @@ def phosx(
 
     if network_path is not None:
         network_df = pd.DataFrame.from_dict(network.get_edges_dict(), orient="columns")
+        network_df["complementarity"] = network_df["complementarity"].round(
+            decimals=2
+        )
         network_df.to_csv(
             f"{network_path}",
             sep="\t",
@@ -342,7 +353,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.15.0
+Version 0.16.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
@@ -363,7 +374,8 @@ Command: {' '.join(sys.argv)}
         args.s_t_n_top_kinases,
         args.y_n_top_kinases,
         args.min_n_hits,
-        args.min_quantile,
+        args.s_t_min_quantile,
+        args.y_min_quantile,
         args.no_upstream_activation_evidence,
         args.kinase_metadata,
         args.a_loop_s_t_quantile_threshold,

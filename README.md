@@ -8,7 +8,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.15.0`
+> Current version: `0.16.0`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -57,21 +57,21 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
   <summary>A brief description of the command line options can be viewed with `phosx -h`:</summary>
 
   ```bash
-  ██████╗░██╗░░██╗░█████╗░░██████╗██╗░░██╗
+██████╗░██╗░░██╗░█████╗░░██████╗██╗░░██╗
 ██╔══██╗██║░░██║██╔══██╗██╔════╝╚██╗██╔╝
 ██████╔╝███████║██║░░██║╚█████╗░░╚███╔╝░
 ██╔═══╝░██╔══██║██║░░██║░╚═══██╗░██╔██╗░
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.15.0
+Version 0.16.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
 Command: /home/alussana/Xiv_local/venvs/phosx/bin/phosx -h
 
-usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-no-uae] [-meta KINASE_METADATA] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-astqth A_LOOP_S_T_QUANTILE_THRESHOLD] [-ayqth A_LOOP_Y_QUANTILE_THRESHOLD] [-urt UPREG_REDUNDANCY_THRESHOLD] [-drt DOWNREG_REDUNDANCY_THRESHOLD] [-mh MIN_N_HITS] [-mp MIN_QUANTILE]
-             [-df1 DECAY_FACTOR] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-nd NETWORKS_DIR] [-o OUTPUT_PATH] [-v]
+usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-no-uae] [-meta KINASE_METADATA] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-astqth A_LOOP_S_T_QUANTILE_THRESHOLD] [-ayqth A_LOOP_Y_QUANTILE_THRESHOLD] [-urt UPREG_REDUNDANCY_THRESHOLD] [-drt DOWNREG_REDUNDANCY_THRESHOLD] [-mh MIN_N_HITS]
+             [-stmq S_T_MIN_QUANTILE] [-ymq Y_MIN_QUANTILE] [-df1 DECAY_FACTOR] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-nd NETWORK_PATH] [-o OUTPUT_PATH] [-v]
              seqrnk
 
 Data-driven differential kinase activity inference from phosphosproteomics data
@@ -96,7 +96,7 @@ options:
   -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
                         Number of random permutations; default: 10000
   -stk S_T_N_TOP_KINASES, --s-t-n-top-kinases S_T_N_TOP_KINASES
-                        Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5
+                        Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 10
   -yk Y_N_TOP_KINASES, --y-n-top-kinases Y_N_TOP_KINASES
                         Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5
   -astqth A_LOOP_S_T_QUANTILE_THRESHOLD, --a-loop-s-t-quantile-threshold A_LOOP_S_T_QUANTILE_THRESHOLD
@@ -109,8 +109,10 @@ options:
                         Minimum Jaccard index of target substrates to consider two downregulated kinases having potentially correlated activity; upstream activation evidence is used to prioritize the activity of individual ones; default: 0.5
   -mh MIN_N_HITS, --min-n-hits MIN_N_HITS
                         Minimum number of phosphosites associated with a kinase for the kinase to be considered in the analysis; default: 4
-  -mp MIN_QUANTILE, --min-quantile MIN_QUANTILE
-                        Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a kinase; default: 0.95
+  -stmq S_T_MIN_QUANTILE, --s-t-min-quantile S_T_MIN_QUANTILE
+                        Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a Ser/Thr kinase; default: 0.95
+  -ymq Y_MIN_QUANTILE, --y-min-quantile Y_MIN_QUANTILE
+                        Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a Tyr kinase; default: 0.90
   -df1 DECAY_FACTOR, --decay-factor DECAY_FACTOR
                         Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 64
   -c N_PROC, --n-proc N_PROC
@@ -121,7 +123,7 @@ options:
   -nd NETWORK_PATH, --network-path NETWORK_PATH
                         Output file path for the inferred Kinase-->A-loop network; if not specified, the network will not be saved
   -o OUTPUT_PATH, --output-path OUTPUT_PATH
-                        Main output table; if not specified it will be printed in STDOUT
+                        Main output table with differential kinase activitiy scores; if not specified it will be printed in STDOUT
   -v, --version         Print package version and exit
   ```
 </details>
@@ -288,22 +290,22 @@ It is possible to pass custom A-loop sequences by specifying a suitable `.h5` me
 
 ### Differential kinase activity score
 
-PhosX's main output is a text file reporting the computed kinase activities with associated statistics as described in the [Method](#method) section. For each kinase, the KS	statistics, the _p_ value, the FDR _q_ value, and the	Activity Score are reported. Kinases for which a differential activity could not be computed due to a low number of assigned phosphosites (see option `-mh MIN_HITS`) are reported as having an Activity Score of $0$ and `NA` values in the other columns. See an output example from the command executed [above](#usage):
+PhosX's main output is a text file reporting the computed kinase activities with associated statistics as described in the [Method](#method) section. For each kinase, the KS	statistics, the _p_ value, the FDR _q_ value, and the	Activity Score are reported. Kinases for which a differential activity could not be computed due to a low number of assigned phosphosites (see option `-mh MIN_HITS`) are reported as having Activity Score = `NA`. See an output example from the command executed [above](#usage):
 
 <details>
   <summary>head kinase_activities.tmp</summary>
 
   ```bash
-          KS      p value FDR q value     Activity Score
-  ACVR2A  0.23331 0.4193  1.0     0.37748
-  ACVR2B  0.45501 0.0276  1.0     1.55909
-  ALK2    0.25047 0.3705  1.0     0.43121
-  ALK4    -0.35766        0.1447  1.0     -0.83953
-  ALPHAK3 -0.2778 0.3899  1.0     -0.40905
-  AMPKA2  0.44011 0.2997  1.0     0.52331
-  ATM     -0.51674        0.0932  1.0     -1.03058
-  ATR     -0.49195        0.1356  1.0     -0.86774
-  AURA    0.64746 0.0886  1.0     1.05257
+          KS      p value FDR q value     Legacy Activity Score   Activity Score
+  ACVR2A  0.23331 0.4396  1.0     0.35694 0.35694
+  ACVR2B  0.45501 0.024   1.0     1.61979 1.61979
+  ALK2    0.25047 0.3692  1.0     0.43274 0.43274
+  ALK4    -0.35766        0.1504  1.0     -0.82275        -0.82275
+  ALPHAK3 -0.2778 0.3792  1.0     -0.42113        -0.42113
+  AMPKA2  0.44011 0.296   1.0     0.52871 0.52871
+  ATM     -0.51674        0.1008  1.0     -0.99654        -0.99654
+  ATR     -0.49195        0.1272  1.0     -0.89551        -0.89551
+  AURA    0.64746 0.0952  1.0     1.02136 1.02136
   ```
 </details>
 
@@ -324,15 +326,15 @@ phosx -c 4 --network-path aloop_network.tsv tests/seqrnk/koksal2018_log2.fold.ch
   
   ```bash
   source  target  complementarity source_activity_score   target_activity_score
-  ACVR2A  LATS1   1.0     0.3751  0.55941
-  ACVR2A  LATS2   1.0     0.3751  0.64724
-  ACVR2A  MARK1   1.0     0.3751  -1.43415
-  ACVR2A  MARK2   1.0     0.3751  -1.15614
-  ACVR2A  MARK3   1.0     0.3751  -0.92812
-  ACVR2A  MARK4   1.0     0.3751  -1.16558
-  ACVR2A  NLK     1.0     0.3751  1.80688
-  ACVR2A  PINK1   1.0     0.3751  0.61583
-  ACVR2A  BLK     1.0     0.3751  -1.77728
+  ACVR2A  LATS1   1.0     0.35694 0.56543
+  ACVR2A  LATS2   1.0     0.35694 0.66474
+  ACVR2A  MARK1   1.0     0.35694 -1.43415
+  ACVR2A  MARK2   1.0     0.35694 -1.22475
+  ACVR2A  MARK3   1.0     0.35694 -0.91593177
+  ACVR2A  MARK4   1.0     0.35694 -1.19382
+  ACVR2A  NLK     1.0     0.35694 1.79588
+  ACVR2A  PINK1   1.0     0.35694 0.62051
+  ACVR2A  BLK     0.98    0.35694 -2.4437
   ```
 </details>
 
