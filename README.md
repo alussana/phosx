@@ -8,7 +8,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.17.0`
+> Current version: `0.18.0`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -64,14 +64,15 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.17.0
+Version 0.18.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
 Command: /home/alussana/Xiv_local/venvs/phosx/bin/phosx -h
 
-usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-no-uae] [-meta KINASE_METADATA] [-n N_PERMUTATIONS] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-astqth A_LOOP_S_T_QUANTILE_THRESHOLD] [-ayqth A_LOOP_Y_QUANTILE_THRESHOLD] [-urt UPREG_REDUNDANCY_THRESHOLD] [-drt DOWNREG_REDUNDANCY_THRESHOLD] [-mh MIN_N_HITS]
-             [-stmq S_T_MIN_QUANTILE] [-ymq Y_MIN_QUANTILE] [-df1 DECAY_FACTOR] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-nd NETWORK_PATH] [-o OUTPUT_PATH] [-v]
+usage: phosx [-h] [-yp Y_PSSM] [-stp S_T_PSSM] [-yq Y_PSSM_QUANTILES] [-stq S_T_PSSM_QUANTILES] [-no-uae] [-meta KINASE_METADATA] [-n N_PERMUTATIONS] [-s] [-t] [-stk S_T_N_TOP_KINASES] [-yk Y_N_TOP_KINASES] [-astqth A_LOOP_S_T_QUANTILE_THRESHOLD]
+             [-ayqth A_LOOP_Y_QUANTILE_THRESHOLD] [-urt UPREG_REDUNDANCY_THRESHOLD] [-drt DOWNREG_REDUNDANCY_THRESHOLD] [-mh MIN_N_HITS] [-stmq S_T_MIN_QUANTILE] [-ymq Y_MIN_QUANTILE] [-df1 DECAY_FACTOR] [-c N_PROC] [--plot-figures] [-d OUTPUT_DIR] [-nd NETWORK_PATH]
+             [-o OUTPUT_PATH] [-v]
              seqrnk
 
 Data-driven differential kinase activity inference from phosphosproteomics data
@@ -94,9 +95,11 @@ options:
   -meta KINASE_METADATA, --kinase-metadata KINASE_METADATA
                         Path to the h5 file storing kinase metadata ("aloop_seq"); defaults to built-in metadata
   -n N_PERMUTATIONS, --n-permutations N_PERMUTATIONS
-                        Number of random permutations; default: 10000
+                        Number of random permutations; default: 20000
+  -s, --ser-thr-only    Only compute Ser/Thr kinases activity; default: False
+  -t, --tyr-only        Only compute Tyr kinases activity; default: False
   -stk S_T_N_TOP_KINASES, --s-t-n-top-kinases S_T_N_TOP_KINASES
-                        Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 10
+                        Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5
   -yk Y_N_TOP_KINASES, --y-n-top-kinases Y_N_TOP_KINASES
                         Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5
   -astqth A_LOOP_S_T_QUANTILE_THRESHOLD, --a-loop-s-t-quantile-threshold A_LOOP_S_T_QUANTILE_THRESHOLD

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-from os import path, makedirs
 import sys
 import pandas as pd
 from phosx.kinase_activity import compute_kinase_activities
@@ -67,21 +66,35 @@ def parse_phosx_args():
         "-n",
         "--n-permutations",
         type=int,
-        default=10000,
-        help="Number of random permutations; default: 10000",
+        default=20000,
+        help="Number of random permutations; default: 20000",
+    )
+    parser.add_argument(
+        "-s",
+        "--ser-thr-only",
+        action="store_true",
+        default=False,
+        help="Only compute Ser/Thr kinases activity; default: False",
+    )
+    parser.add_argument(
+        "-t",
+        "--tyr-only",
+        action="store_true",
+        default=False,
+        help="Only compute Tyr kinases activity; default: False",
     )
     parser.add_argument(
         "-stk",
         "--s-t-n-top-kinases",
         type=int,
         default=5,
-        help="Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 10",
+        help="Number of top-scoring Ser/Thr kinases potentially associatiated to a given phosphosite; default: 5",
     )
     parser.add_argument(
         "-yk",
         "--y-n-top-kinases",
         type=int,
-        default=10,
+        default=5,
         help="Number of top-scoring Tyr kinases potentially associatiated to a given phosphosite; default: 5",
     )
     parser.add_argument(
@@ -177,7 +190,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.17.0",
+        version="0.18.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -198,9 +211,11 @@ def phosx(
     y_pssm_score_quantiles_h5_file: str = str(
         path.join(path.dirname(__file__), "../phosx/data/Y_PSSM_score_quantiles.h5")
     ),
-    n_perm: int = 10000,
+    n_perm: int = 20000,
+    ser_thr_only: bool = False,
+    tyr_only: bool = False,
     s_t_n_top_kinases: int = 5,
-    y_n_top_kinases: int = 10,
+    y_n_top_kinases: int = 5,
     min_n_hits: int = 4,
     s_t_min_quantile: float = 0.95,
     y_min_quantile: float = 0.90,
@@ -209,7 +224,7 @@ def phosx(
         path.join(path.dirname(__file__), "../phosx/data/kinase_metadata.h5")
     ),
     a_loop_s_t_quantile_threshold: int = 0.95,
-    a_loop_y_quantile_threshold: int = 0.90,
+    a_loop_y_quantile_threshold: int = 0.95,
     upreg_redundancy_threshold: float = 0.5,
     downreg_redundancy_threshold: float = 0.5,
     decay_factor: float = 64,
@@ -219,41 +234,45 @@ def phosx(
     network_path=None,
     out_path=None,
 ):
-    print("> Computing differential activity of Ser/Thr kinases...", file=sys.stderr)
+    if tyr_only:
+        s_t_kinase_activity_df = pd.DataFrame()
+        s_t_assigned_substrates_df = pd.DataFrame()
+    else:
+        print("> Computing differential activity of Ser/Thr kinases...", file=sys.stderr)
+        s_t_kinase_activity_df, s_t_assigned_substrates_df = compute_kinase_activities(
+            seqrnk_file,
+            s_t_pssm_h5_file,
+            s_t_pssm_score_quantiles_h5_file,
+            n_perm,
+            s_t_n_top_kinases,
+            min_n_hits,
+            s_t_min_quantile,
+            n_proc,
+            plot_figures,
+            out_plot_dir,
+            True,
+            False,
+        )
 
-    s_t_kinase_activity_df = pd.DataFrame()
-    s_t_kinase_activity_df, s_t_assigned_substrates_df = compute_kinase_activities(
-        seqrnk_file,
-        s_t_pssm_h5_file,
-        s_t_pssm_score_quantiles_h5_file,
-        n_perm,
-        s_t_n_top_kinases,
-        min_n_hits,
-        s_t_min_quantile,
-        n_proc,
-        plot_figures,
-        out_plot_dir,
-        True,
-        False,
-    )
-
-    print("> Computing differential activity of Tyr kinases...", file=sys.stderr)
-
-    y_kinase_activity_df = pd.DataFrame()
-    y_kinase_activity_df, y_assigned_substrates_df = compute_kinase_activities(
-        seqrnk_file,
-        y_pssm_h5_file,
-        y_pssm_score_quantiles_h5_file,
-        n_perm,
-        y_n_top_kinases,
-        min_n_hits,
-        y_min_quantile,
-        n_proc,
-        plot_figures,
-        out_plot_dir,
-        False,
-        True,
-    )
+    if ser_thr_only:
+        y_kinase_activity_df = pd.DataFrame()
+        y_assigned_substrates_df = pd.DataFrame()
+    else:
+        print("> Computing differential activity of Tyr kinases...", file=sys.stderr)
+        y_kinase_activity_df, y_assigned_substrates_df = compute_kinase_activities(
+            seqrnk_file,
+            y_pssm_h5_file,
+            y_pssm_score_quantiles_h5_file,
+            n_perm,
+            y_n_top_kinases,
+            min_n_hits,
+            y_min_quantile,
+            n_proc,
+            plot_figures,
+            out_plot_dir,
+            False,
+            True,
+        )
 
     activity_df = pd.concat([s_t_kinase_activity_df, y_kinase_activity_df], axis=0)
 
@@ -353,7 +372,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.17.0
+Version 0.18.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
@@ -371,6 +390,8 @@ Command: {' '.join(sys.argv)}
         args.y_pssm,
         args.y_pssm_quantiles,
         args.n_permutations,
+        args.ser_thr_only,
+        args.tyr_only,
         args.s_t_n_top_kinases,
         args.y_n_top_kinases,
         args.min_n_hits,

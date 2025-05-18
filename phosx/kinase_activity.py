@@ -82,7 +82,13 @@ def compute_kinase_activities(
             ),
         )
     if len(dfs_list) == 0:
-        return None
+        print(
+            "No PSSM scores could be computed. Please check the input files.",
+            file=sys.stderr,
+        )
+        results_df = pd.DataFrame(columns=["KS", "p value", "FDR q value", "Activity Score"])
+        return results_df, None
+    
     pssm_scoring_df = pd.concat(dfs_list, axis=1).T
     pssm_scoring_df.index = list(range(len(seq_series)))
 
@@ -105,14 +111,14 @@ def compute_kinase_activities(
     )
 
     # drop kinases with less than min_n_hits
-    binarised_pssm_scores = binarised_pssm_scores.loc[
+    binarised_pssm_scores_df = binarised_pssm_scores.loc[
         :, binarised_pssm_scores.sum() >= min_n_hits
     ]
     print("DONE", file=sys.stderr)
 
     # compute empirical distribution of ks statistic for all kinases
     ks_empirical_distrib_df = compute_ks_empirical_distrib(
-        binarised_pssm_scores=binarised_pssm_scores,
+        binarised_pssm_scores=binarised_pssm_scores_df,
         seqrnk_series=seqrnk["Score"],
         n=n_perm,
         n_proc=n_proc,
@@ -121,7 +127,7 @@ def compute_kinase_activities(
     # compute real ks statistic for all kinases
     ks_series = compute_ks(
         seqrnk_series=seqrnk["Score"],
-        binarised_pssm_scores=binarised_pssm_scores,
+        binarised_pssm_scores=binarised_pssm_scores_df,
         plot_bool=plot_figures,
         out_plot_dir_str=out_plot_dir,
     ).round(decimals=5)
