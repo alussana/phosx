@@ -83,12 +83,14 @@ def compute_kinase_activities(
         )
     if len(dfs_list) == 0:
         print(
-            "No PSSM scores could be computed. Please check the input files.",
+            "No PSSM scores could be computed. Please check the input files or consider using the --ser-thr-only or --tyr-only command line options.",
             file=sys.stderr,
         )
-        results_df = pd.DataFrame(columns=["KS", "p value", "FDR q value", "Activity Score"])
+        results_df = pd.DataFrame(
+            columns=["KS", "p value", "FDR q value", "Activity Score"]
+        )
         return results_df, None
-    
+
     pssm_scoring_df = pd.concat(dfs_list, axis=1).T
     pssm_scoring_df.index = list(range(len(seq_series)))
 

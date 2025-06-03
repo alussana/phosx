@@ -191,7 +191,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.19.0",
+        version="0.19.1",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -360,6 +360,24 @@ def phosx(
     else:
         activity_df.to_csv(out_path, na_rep="NA", sep="\t", header=True, index=True)
 
+    # TODO: save the assigned substrates
+    #if tyr_only != True:
+    #    s_t_assigned_substrates_df.to_csv(
+    #        f"{out_plot_dir}/s_t_assigned_substrates.tsv",
+    #        sep="\t",
+    #        na_rep="NA",
+    #        header=True,
+    #        index=True,
+    #    )
+    #if ser_thr_only != True:
+    #    y_assigned_substrates_df.to_csv(
+    #        f"{out_plot_dir}/y_assigned_substrates.tsv",
+    #        sep="\t",
+    #        na_rep="NA",
+    #        header=True,
+    #        index=True,
+    #    )
+
     return activity_df
 
 
@@ -373,7 +391,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.19.0
+Version 0.19.1
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
