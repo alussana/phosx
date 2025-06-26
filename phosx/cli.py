@@ -151,8 +151,8 @@ def parse_phosx_args():
         "-df1",
         "--decay-factor",
         type=float,
-        default=64,
-        help="Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 64",
+        default=256,
+        help="Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 256",
     )
     parser.add_argument(
         "-c",
@@ -191,7 +191,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.19.1",
+        version="0.19.2",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -228,7 +228,7 @@ def phosx(
     a_loop_y_quantile_threshold: int = 0.95,
     upreg_redundancy_threshold: float = 0.5,
     downreg_redundancy_threshold: float = 0.5,
-    decay_factor: float = 64,
+    decay_factor: float = 256,
     n_proc: int = 1,
     plot_figures: bool = False,
     out_plot_dir: str = "phosx_output",
@@ -391,7 +391,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.19.1
+Version 0.19.2
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 

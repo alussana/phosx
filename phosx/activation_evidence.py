@@ -286,7 +286,7 @@ def compute_activation_evidence(
     s_t_quantile_threshold: int = 0.95,
     y_quantile_threshold: int = 0.95,
     redundacy_threshold: float = 0.5,
-    decay_factor: float = 64,
+    decay_factor: float = 256,
     upregulation: bool = True,
     n_proc: int = 1,
     plot_figures: bool = False,

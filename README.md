@@ -8,7 +8,7 @@
 
 ![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg)
 
-> Current version: `0.19.1`
+> Current version: `0.19.2`
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
 
@@ -64,7 +64,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.19.1
+Version 0.19.2
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
@@ -117,7 +117,7 @@ options:
   -ymq Y_MIN_QUANTILE, --y-min-quantile Y_MIN_QUANTILE
                         Minimum PSSM score quantile that a phosphosite has to satisfy to be potentially assigned to a Tyr kinase; default: 0.90
   -df1 DECAY_FACTOR, --decay-factor DECAY_FACTOR
-                        Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 64
+                        Decay factor for the exponential decay of the activation evidence when competing kinases have different activation scores. See utils.decay_from_1(); default: 256
   -c N_PROC, --n-proc N_PROC
                         Number of cores used for multithreading; default: 1
   --plot-figures        Save figures in pdf format; see also --output_dir
