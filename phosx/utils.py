@@ -186,3 +186,21 @@ def sync_dataframe_with_names(df, names_list, fill_value=0):
     new_df = new_df.loc[names_list, names_list]
 
     return new_df
+
+
+def concat_keep_na(df_a, df_b):
+    # union of columns, preserving order
+    def _union_cols(d1, d2):
+        return list(dict.fromkeys(list(d1.columns) + list(d2.columns)))
+
+    cols = _union_cols(df_a, df_b)
+
+    a_aligned = df_a.reindex(columns=cols)
+    b_aligned = df_b.reindex(columns=cols)
+
+    frames = [df for df in (a_aligned, b_aligned) if len(df) > 0]
+
+    return (
+        pd.DataFrame(columns=cols) if not frames
+        else pd.concat(frames, axis=0, sort=False, copy=False)
+    )

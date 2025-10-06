@@ -6,6 +6,7 @@ import os.path as path
 import pandas as pd
 from phosx.kinase_activity import compute_kinase_activities
 from phosx.activation_evidence import compute_activation_evidence
+from phosx.utils import concat_keep_na
 
 
 def parse_phosx_args():
@@ -275,7 +276,7 @@ def phosx(
             True,
         )
 
-    activity_df = pd.concat([s_t_kinase_activity_df, y_kinase_activity_df], axis=0)
+    activity_df = concat_keep_na(s_t_kinase_activity_df, y_kinase_activity_df)
 
     if no_upstream_activation_evidence == False:
         print(
