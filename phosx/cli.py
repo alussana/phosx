@@ -192,7 +192,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.20.1",
+        version="0.21.0",
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -392,7 +392,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.20.1
+Version 0.21.0
 Copyright (C) 2026 Alessandro Lussana
 Licence Apache 2.0
 

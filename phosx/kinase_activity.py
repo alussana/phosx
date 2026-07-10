@@ -6,7 +6,12 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 
-from phosx.utils import read_pssms, read_pssm_score_quantiles, read_seqrnk
+from phosx.utils import (
+    read_pssms,
+    read_pssm_score_quantiles,
+    read_seqrnk,
+    benjamini_hochberg,
+)
 from phosx.pssms import quantile_scaling, pssm_scoring, binarise_pssm_scores
 from phosx.pssm_enrichment import (
     compute_ks_empirical_distrib,
@@ -16,14 +21,13 @@ from phosx.pssm_enrichment import (
 
 
 def compute_activity_score(results_df: pd.DataFrame, max_abs_score: float):
-    # compute FDR
-    results_df["FDR q value"] = (results_df["p value"] * len(results_df)).round(
+    # compute FDR q values with the Benjamini-Hochberg procedure, considering
+    # the number of kinases independently tested
+    results_df["FDR q value"] = benjamini_hochberg(results_df["p value"]).round(
         decimals=5
     )
-    # cap FDR q value at 1
-    results_df.loc[results_df["FDR q value"] > 1, "FDR q value"] = 1
 
-    # compute activity score as -log10(FDR), signed with the sign of KS
+    # compute activity score as -log10(p value), signed with the sign of KS
     activity_score_series = results_df["p value"].copy()
 
     # 1. replace zeroes with tiny numbers

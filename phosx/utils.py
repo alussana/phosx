@@ -188,6 +188,51 @@ def sync_dataframe_with_names(df, names_list, fill_value=0):
     return new_df
 
 
+def benjamini_hochberg(pvalues: pd.Series) -> pd.Series:
+    """
+    Compute Benjamini-Hochberg FDR-adjusted p values (q values).
+
+    Given a Series of p values, return a Series with the same index holding the
+    BH-adjusted q values. The number of tested hypotheses is taken as the number
+    of non-NaN p values; the adjusted values are made monotonically
+    non-decreasing with the ranked p values and capped at 1. NaN p values are
+    preserved as NaN.
+
+    Parameters:
+    - pvalues (pd.Series): Input p values, indexed by hypothesis (e.g. kinase)
+
+    Returns:
+    - pd.Series: BH-adjusted q values, same index as the input
+    """
+    qvalues = pd.Series(np.nan, index=pvalues.index, name="FDR q value")
+
+    # only tested hypotheses (non-NaN p values) contribute to the correction
+    valid_mask = pvalues.notna()
+    p = pvalues[valid_mask].to_numpy(dtype=float)
+    m = len(p)
+
+    if m == 0:
+        return qvalues
+
+    # rank p values in ascending order (stable sort for reproducibility)
+    order = np.argsort(p, kind="mergesort")
+    ranks = np.arange(1, m + 1)
+
+    # raw BH-adjusted values, then enforce monotonicity walking from the largest
+    # p value down, and finally cap at 1
+    adjusted = p[order] * m / ranks
+    adjusted = np.minimum.accumulate(adjusted[::-1])[::-1]
+    adjusted = np.minimum(adjusted, 1.0)
+
+    # restore the original (pre-sort) order of the tested hypotheses
+    restored = np.empty(m, dtype=float)
+    restored[order] = adjusted
+
+    qvalues[valid_mask] = restored
+
+    return qvalues
+
+
 def concat_keep_na(df_a, df_b):
     # union of columns, preserving order
     def _union_cols(d1, d2):

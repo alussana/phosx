@@ -5,7 +5,7 @@
   <br><br>
 </p>
 
-![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg) ![Version](https://img.shields.io/badge/version-0.20.1-blue)
+![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg) ![Version](https://img.shields.io/badge/version-0.21.1-blue)
 
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
@@ -68,7 +68,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.20.1
+Version 0.21.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 
@@ -304,15 +304,15 @@ PhosX's main output is a text file reporting the computed kinase activities with
 
   ```bash
           KS      p value FDR q value     Legacy Activity Score   Activity Score
-  ACVR2A  0.23331 0.4396  1.0     0.35694 0.35694
-  ACVR2B  0.45501 0.024   1.0     1.61979 1.61979
-  ALK2    0.25047 0.3692  1.0     0.43274 0.43274
-  ALK4    -0.35766        0.1504  1.0     -0.82275        -0.82275
-  ALPHAK3 -0.2778 0.3792  1.0     -0.42113        -0.42113
-  AMPKA2  0.44011 0.296   1.0     0.52871 0.52871
-  ATM     -0.51674        0.1008  1.0     -0.99654        -0.99654
-  ATR     -0.49195        0.1272  1.0     -0.89551        -0.89551
-  AURA    0.64746 0.0952  1.0     1.02136 1.02136
+  ACVR2A  0.23331 0.42765 0.46032 0.36891 0.36891
+  ACVR2B  0.45501 0.0234  0.13606 1.63078 1.63078
+  ALK2    0.25047 0.37085 0.44217 0.4308  0.4308
+  ALK4    -0.35766        0.1498  0.27011 -0.82449        -0.82449
+  ALPHAK3 -0.2778 0.3989  0.45131 -0.39914        -0.39914
+  AMPKA2  0.44011 0.28485 0.39076 0.54538 0.54538
+  ATM     -0.51674        0.10205 0.22279 -0.99119        -0.99119
+  ATR     -0.49195        0.13305 0.25339 -0.87599        -0.87599
+  AURA    0.64746 0.09635 0.22279 1.01615 1.01615
   ```
 </details>
 
@@ -384,7 +384,7 @@ The kinase enrichment score ($ES$) corresponds to the maximum deviation from $0$
 
 ## Empirical _p_ values
 
-For each kinase, PhosX computes an empirical _p_ value of the $ES$ by generating a null distribution of the $ES$ through random permutations of the phosphosite ranks. A False Discovery Rate (FDR) _q_ value is also calculated by applying the Bonferroni method considering the number of kinases independently tested. The number of permutations is a tunable parameter but we recommend performing at least $10^4$ random permutations to be able to compute FDR values $< 0.05$.
+For each kinase, PhosX computes an empirical _p_ value of the $ES$ by generating a null distribution of the $ES$ through random permutations of the phosphosite ranks. A False Discovery Rate (FDR) _q_ value is also calculated by applying the Benjamini-Hochberg procedure considering the number of kinases independently tested. The number of permutations is a tunable parameter but we recommend performing at least $10^4$ random permutations to be able to compute FDR values $< 0.05$.
 
 ## Differential activity scores
 
