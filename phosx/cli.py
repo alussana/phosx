@@ -4,6 +4,7 @@ import argparse
 import sys
 import os.path as path
 import pandas as pd
+from phosx import __version__
 from phosx.kinase_activity import compute_kinase_activities
 from phosx.activation_evidence import compute_activation_evidence
 from phosx.utils import concat_keep_na
@@ -192,7 +193,7 @@ def parse_phosx_args():
         "-v",
         "--version",
         action="version",
-        version="0.21.0",
+        version=__version__,
         help="Print package version and exit",
     )
     args = parser.parse_args()
@@ -392,7 +393,7 @@ def main():
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.21.0
+Version {__version__}
 Copyright (C) 2026 Alessandro Lussana
 Licence Apache 2.0
 

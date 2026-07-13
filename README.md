@@ -40,10 +40,10 @@ In the [benchmark](https://github.com/alussana/phosx-benchmark) PhosX consistent
 pip install phosx
 ```
 
-## From source (requires [Poetry](https://python-poetry.org))
+## From source (requires [uv](https://docs.astral.sh/uv))
 
 ```
-poetry build
+uv build
 pip install dist/*.whl
 ```
 
@@ -68,7 +68,7 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.21.0
+Version 0.22.0
 Copyright (C) 2025 Alessandro Lussana
 Licence Apache 2.0
 

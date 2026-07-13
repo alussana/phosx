@@ -1,24 +1,36 @@
-[tool.poetry]
+[project]
 name = "phosx"
-version = "0.21.0"
+version = "0.22.0"
 description = "Differential kinase activity inference from phosphosproteomics data"
-authors = ["Alessandro Lussana <alessandro.lussana@protonmail.com>"]
+authors = [
+    { name = "Alessandro Lussana", email = "alessandro.lussana@protonmail.com" },
+]
 readme = "README.md"
-include = ["phosx/data/*"]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "h5py>=3.9.0,<4.0.0",
+    "pandas>=2.0.3,<3.0.0",
+    "seaborn>=0.12.2,<0.13.0",
+    "tables>=3.9.2,<4.0.0",
+    "tqdm>=4.66.2,<5.0.0",
+    "requests>=2.32.3,<3.0.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-h5py = "^3.9.0"
-pandas = "^2.0.3"
-seaborn = "^0.12.2"
-tables = "^3.9.2"
-tqdm = "^4.66.2"
-requests = "^2.32.3"
+[project.scripts]
+phosx = "phosx.cli:main"
+make-seqrnk = "phosx.make_seqrnk:main"
 
-[tool.poetry.scripts]
-phosx = 'phosx.cli:main'
-make-seqrnk = 'phosx.make_seqrnk:main'
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# flat layout: the package lives at the repo root (phosx/), not under src/
+module-root = ""
