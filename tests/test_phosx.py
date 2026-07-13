@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from phosx.cli import phosx
+from phosx.kinase_activity import compute_kinase_activities
 from os import path
 
 
@@ -82,10 +83,43 @@ def test_kinase_activities_w_figures():
     )
 
 
+def test_too_few_phosphosites_to_infer_activity():
+    # Regression test: when the input has too few phosphosites of a given type,
+    # no kinase reaches the minimum number of associated phosphosites and none
+    # can be tested. Every kinase should be reported with undefined activity
+    # and a valid substrates DataFrame should be returned.
+    results_df, substrates_df = compute_kinase_activities(
+        seqrnk_file=str(
+            path.join(path.dirname(__file__), "seqrnk/few_tyr_phosphosites.seqrnk")
+        ),
+        pssm_h5_file=str(
+            path.join(path.dirname(__file__), "../phosx/data/Y_PSSMs.h5")
+        ),
+        pssm_score_quantiles_h5_file=str(
+            path.join(path.dirname(__file__), "../phosx/data/Y_PSSM_score_quantiles.h5")
+        ),
+        n_perm=100,
+        n_proc=1,
+        tyr_only=True,
+    )
+
+    # nothing could be inferred, but all kinases are reported: KS and p values
+    # are undefined and the activity defaults to 0 (as for any untested kinase)
+    assert len(results_df) > 0
+    assert results_df["KS"].isna().all()
+    assert results_df["p value"].isna().all()
+    assert (results_df["Activity Score"] == 0).all()
+
+    # substrates must be a DataFrame (not None) so downstream steps keep working
+    assert substrates_df is not None
+    assert list(substrates_df.columns)
+
+
 def test_all():
     test_kinase_activities_1core()
     test_kinase_activities_4cores()
     test_kinase_activities_w_figures()
+    test_too_few_phosphosites_to_infer_activity()
 
 
 if __name__ == "__main__":

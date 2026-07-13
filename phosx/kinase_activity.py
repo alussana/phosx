@@ -87,13 +87,28 @@ def compute_kinase_activities(
         )
     if len(dfs_list) == 0:
         print(
-            "No PSSM scores could be computed. Please check the input files or consider using the --ser-thr-only or --tyr-only command line options.",
+            "No phosphosites of the relevant type were found in the input; "
+            "skipping activity inference for these kinases. If this is "
+            "unexpected, check the input file or the --ser-thr-only / "
+            "--tyr-only options.",
             file=sys.stderr,
         )
+        # report every kinase with undefined activity, mirroring the treatment
+        # of untested kinases in a normal run (see the missing-kinases block
+        # below), and return an empty (but valid) substrates DataFrame so that
+        # downstream steps such as compute_activation_evidence keep working
+        kinase_list = list(pssm_df_dict.keys())
         results_df = pd.DataFrame(
-            columns=["KS", "p value", "FDR q value", "Activity Score"]
+            {
+                "KS": np.nan,
+                "p value": np.nan,
+                "FDR q value": np.nan,
+                "Activity Score": 0,
+            },
+            index=kinase_list,
         )
-        return results_df, None
+        empty_substrates_df = pd.DataFrame(columns=kinase_list)
+        return results_df, empty_substrates_df
 
     pssm_scoring_df = pd.concat(dfs_list, axis=1).T
     pssm_scoring_df.index = list(range(len(seq_series)))
@@ -122,38 +137,54 @@ def compute_kinase_activities(
     ]
     print("DONE", file=sys.stderr)
 
-    # compute empirical distribution of ks statistic for all kinases
-    ks_empirical_distrib_df = compute_ks_empirical_distrib(
-        binarised_pssm_scores=binarised_pssm_scores_df,
-        seqrnk_series=seqrnk["Score"],
-        n=n_perm,
-        n_proc=n_proc,
-    )
+    if binarised_pssm_scores_df.shape[1] == 0:
+        # No kinase reached the minimum of min_n_hits associated phosphosites.
+        # This happens when the input contains too few phosphosites of this type
+        # (e.g. only a handful of Tyr sites), which is not enough to infer any
+        # activity. Skip the enrichment and leave every kinase undefined; they
+        # are all filled in below via the missing-kinases block.
+        print(
+            f"W: no kinase reached the minimum of {min_n_hits} associated "
+            "phosphosites; skipping activity inference for these kinases.",
+            file=sys.stderr,
+        )
+        print("   Computing activity scores  : ", file=sys.stderr, end="")
+        results_df = pd.DataFrame(
+            columns=["KS", "p value", "FDR q value", "Activity Score"]
+        )
+    else:
+        # compute empirical distribution of ks statistic for all kinases
+        ks_empirical_distrib_df = compute_ks_empirical_distrib(
+            binarised_pssm_scores=binarised_pssm_scores_df,
+            seqrnk_series=seqrnk["Score"],
+            n=n_perm,
+            n_proc=n_proc,
+        )
 
-    # compute real ks statistic for all kinases
-    ks_series = compute_ks(
-        seqrnk_series=seqrnk["Score"],
-        binarised_pssm_scores=binarised_pssm_scores_df,
-        plot_bool=plot_figures,
-        out_plot_dir_str=out_plot_dir,
-    ).round(decimals=5)
-    ks_series.name = "KS"
+        # compute real ks statistic for all kinases
+        ks_series = compute_ks(
+            seqrnk_series=seqrnk["Score"],
+            binarised_pssm_scores=binarised_pssm_scores_df,
+            plot_bool=plot_figures,
+            out_plot_dir_str=out_plot_dir,
+        ).round(decimals=5)
+        ks_series.name = "KS"
 
-    # compute ks p values for all kinases
-    print("   Computing activity scores  : ", file=sys.stderr, end="")
-    ks_pvalue_series = compute_ks_pvalues(
-        ks_empirical_distrib_df=ks_empirical_distrib_df,
-        ks_series=ks_series,
-        plot_bool=plot_figures,
-        out_plot_dir_str=out_plot_dir,
-    ).round(decimals=5)
+        # compute ks p values for all kinases
+        print("   Computing activity scores  : ", file=sys.stderr, end="")
+        ks_pvalue_series = compute_ks_pvalues(
+            ks_empirical_distrib_df=ks_empirical_distrib_df,
+            ks_series=ks_series,
+            plot_bool=plot_figures,
+            out_plot_dir_str=out_plot_dir,
+        ).round(decimals=5)
 
-    # output table
-    results_df = pd.concat([ks_series, ks_pvalue_series], axis=1)
+        # output table
+        results_df = pd.concat([ks_series, ks_pvalue_series], axis=1)
 
-    # compute activity score for all kinases
-    results_df = compute_activity_score(results_df, np.log10(n_perm))
-    results_df["Activity Score"] = results_df["Activity Score"].round(decimals=5)
+        # compute activity score for all kinases
+        results_df = compute_activity_score(results_df, np.log10(n_perm))
+        results_df["Activity Score"] = results_df["Activity Score"].round(decimals=5)
 
     # add the kinases for which no inferece could be made to results_df
     kinase_list = list(pssm_df_dict.keys())

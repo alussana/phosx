@@ -2,7 +2,7 @@
 name = "phosx"
 version = "0.21.0"
 description = "Differential kinase activity inference from phosphosproteomics data"
-authors = ["Alessandro Lussana <alussana@ebi.ac.uk>"]
+authors = ["Alessandro Lussana <alessandro.lussana@protonmail.com>"]
 readme = "README.md"
 include = ["phosx/data/*"]
 
