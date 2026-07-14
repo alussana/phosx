@@ -1,11 +1,11 @@
 <p align="center">
-  <img width="356" src="https://raw.githubusercontent.com/alussana/phosx/refs/heads/main/phosx/assets/logo.png">
+  <img width="340" src="https://raw.githubusercontent.com/alussana/phosx/refs/heads/main/phosx/assets/logo.png">
   <br><br>
   Kinase activity inference from phosphosproteomics data based on substrate sequence specificity
   <br><br>
 </p>
 
-![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg) ![Version](https://img.shields.io/badge/version-0.21.1-blue)
+![Build and publish to PyPI badge](https://github.com/alussana/phosx/actions/workflows/build-and-publish-to-pypi.yml/badge.svg) ![Version](https://img.shields.io/badge/version-0.23.0-blue)
 
 
 > Research paper: [https://doi.org/10.1093/bioinformatics/btae697](https://doi.org/10.1093/bioinformatics/btae697) (NOTE: outdated; the current method is vastly improved and includes new features)
@@ -68,8 +68,8 @@ phosx -c 4 tests/seqrnk/koksal2018_log2.fold.change.8min.seqrnk > kinase_activit
 ██║░░░░░██║░░██║╚█████╔╝██████╔╝██╔╝╚██╗
 ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝
 
-Version 0.22.0
-Copyright (C) 2025 Alessandro Lussana
+Version 0.23.0
+Copyright (C) 2026 Alessandro Lussana
 Licence Apache 2.0
 
 Command: /home/alussana/Xiv_local/venvs/phosx/bin/phosx -h

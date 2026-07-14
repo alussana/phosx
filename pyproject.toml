@@ -1,6 +1,6 @@
 [project]
 name = "phosx"
-version = "0.22.0"
+version = "0.23.0"
 description = "Differential kinase activity inference from phosphosproteomics data"
 authors = [
     { name = "Alessandro Lussana", email = "alessandro.lussana@protonmail.com" },

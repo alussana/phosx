@@ -20,28 +20,28 @@ from phosx.pssm_enrichment import (
 )
 
 
-def compute_activity_score(results_df: pd.DataFrame, max_abs_score: float):
+def compute_activity_score(
+    results_df: pd.DataFrame, max_abs_score: float, decimals: int = 5
+):
     # compute FDR q values with the Benjamini-Hochberg procedure, considering
     # the number of kinases independently tested
     results_df["FDR q value"] = benjamini_hochberg(results_df["p value"]).round(
-        decimals=5
+        decimals=decimals
     )
 
-    # compute activity score as -log10(p value), signed with the sign of KS
+    # compute activity score as -log10(p value), signed with the sign of KS.
+    # p values are bounded below by 1 / (n_perm + 1) (see compute_ks_pvalues),
+    # so -log10(p) is bounded above by max_abs_score = log10(n_perm + 1); no
+    # zero-p substitution is needed.
     activity_score_series = results_df["p value"].copy()
 
-    # 1. replace zeroes with tiny numbers
-    activity_score_series.loc[activity_score_series == 0] = np.nextafter(
-        np.float32(0), np.float32(1)
-    )
-
-    # 2. compute -log10
+    # 1. compute -log10
     activity_score_series = -np.log10(activity_score_series)
 
-    # 3. cap at maximum
+    # 2. cap at maximum
     activity_score_series.loc[activity_score_series > max_abs_score] = max_abs_score
 
-    # 4. apply the same sign as ks
+    # 3. apply the same sign as ks
     results_df["Activity Score"] = activity_score_series * np.sign(results_df["KS"])
 
     return results_df
@@ -170,6 +170,11 @@ def compute_kinase_activities(
         ).round(decimals=5)
         ks_series.name = "KS"
 
+        # report p (and q) values with enough decimals to represent the finest
+        # resolution afforded by the permutations, 1 / (n_perm + 1), so that a
+        # non-zero p value is never rounded down to zero for large n_perm
+        p_value_decimals = int(np.ceil(np.log10(n_perm + 1)))
+
         # compute ks p values for all kinases
         print("   Computing activity scores  : ", file=sys.stderr, end="")
         ks_pvalue_series = compute_ks_pvalues(
@@ -177,13 +182,16 @@ def compute_kinase_activities(
             ks_series=ks_series,
             plot_bool=plot_figures,
             out_plot_dir_str=out_plot_dir,
-        ).round(decimals=5)
+        ).round(decimals=p_value_decimals)
 
         # output table
         results_df = pd.concat([ks_series, ks_pvalue_series], axis=1)
 
-        # compute activity score for all kinases
-        results_df = compute_activity_score(results_df, np.log10(n_perm))
+        # compute activity score for all kinases; the maximum -log10(p) matches
+        # the p value floor of 1 / (n_perm + 1)
+        results_df = compute_activity_score(
+            results_df, np.log10(n_perm + 1), decimals=p_value_decimals
+        )
         results_df["Activity Score"] = results_df["Activity Score"].round(decimals=5)
 
     # add the kinases for which no inferece could be made to results_df

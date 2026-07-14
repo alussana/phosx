@@ -2,12 +2,22 @@
 
 import argparse
 import sys
+import os
 import os.path as path
 import pandas as pd
 from phosx import __version__
 from phosx.kinase_activity import compute_kinase_activities
 from phosx.activation_evidence import compute_activation_evidence
 from phosx.utils import concat_keep_na
+
+
+def ensure_parent_dir(file_path: str):
+    # create the parent directory of file_path if it does not yet exist, so that
+    # writing an output file never fails when the user points to a directory
+    # that has not been created yet
+    parent_dir = path.dirname(file_path)
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
 
 
 def parse_phosx_args():
@@ -348,6 +358,7 @@ def phosx(
             network_df["complementarity"] = network_df["complementarity"].round(
                 decimals=2
             )
+            ensure_parent_dir(network_path)
             network_df.to_csv(
                 f"{network_path}",
                 sep="\t",
@@ -360,6 +371,7 @@ def phosx(
     if out_path == None:
         print(activity_df.to_csv(sep="\t", na_rep="NA", header=True, index=True))
     else:
+        ensure_parent_dir(out_path)
         activity_df.to_csv(out_path, na_rep="NA", sep="\t", header=True, index=True)
 
     # TODO: save the assigned substrates

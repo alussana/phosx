@@ -172,7 +172,12 @@ def compute_ks_pvalues(
             num_int = sum([x < value_float for x in empirical_list])
 
         den_int = len(empirical_list)
-        pvalue = num_int / den_int
+        # Phipson & Smyth (2010): with permutations randomly sampled, the p value
+        # estimator (b + 1) / (m + 1) is never zero and is bounded below by
+        # 1 / (m + 1) -- the resolution afforded by the number of permutations m.
+        # A bare b / m estimate would report p = 0 whenever the observed statistic
+        # is more extreme than all m permutations, which overstates significance.
+        pvalue = (num_int + 1) / (den_int + 1)
 
         ks_pvalue_series[kinase_str] = pvalue
 
